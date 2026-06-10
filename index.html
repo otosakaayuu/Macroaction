@@ -1,1004 +1,1140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MacroTrader Pro</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BBMacro Terminal v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root{
-  --bg:#04080f;--bg2:#0a1628;--bgc:#0e1e35;--bgh:#142847;--bgi:#071220;
-  --el:#00d4ff;--eld:rgba(0,212,255,.13);--elb:rgba(0,212,255,.28);
-  --lg:#00ff88;--lgd:rgba(0,255,136,.11);--lgb:rgba(0,255,136,.32);
-  --sh:#ff3355;--shd:rgba(255,51,85,.11);--shb:rgba(255,51,85,.32);
-  --am:#ffaa00;--amd:rgba(255,170,0,.14);
-  --tp:#e8f0ff;--ts:#7a9cc0;--tm:#3d5a7a;--td:#a8c8e8;
-  --br:#0d2040;--brl:#152d50;
-  --fui:'DM Sans',sans-serif;--fdt:'Space Mono',monospace;--fds:'Syne',sans-serif;
-  --r:6px;--rl:10px;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--fui);background:var(--bg);color:var(--tp);min-height:100vh;font-size:14px;line-height:1.5}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,212,255,.04) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(0,100,200,.04) 0%,transparent 60%);pointer-events:none;z-index:0}
-#hdr{position:sticky;top:0;z-index:100;background:rgba(4,8,15,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--br);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:30px;height:30px;background:var(--eld);border:1px solid var(--elb);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--fds);font-weight:800;font-size:13px;color:var(--el)}
-.logo-text{font-family:var(--fds);font-weight:700;font-size:15px;color:var(--tp);letter-spacing:-.3px}
-.logo-badge{font-family:var(--fdt);font-size:9px;color:var(--el);background:var(--eld);border:1px solid var(--elb);padding:1px 5px;border-radius:3px;letter-spacing:1px}
-.hdr-r{display:flex;align-items:center;gap:10px}
-#clock{font-family:var(--fdt);font-size:11px;color:var(--ts);letter-spacing:.5px}
-.hbtn{font-family:var(--fui);font-size:11px;font-weight:500;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--brl);background:var(--bg2);color:var(--ts);transition:all .15s}
-.hbtn:hover{color:var(--tp);border-color:var(--elb)}
-.hbtn.danger{color:var(--sh);border-color:var(--shb);background:var(--shd)}
-#nav{background:var(--bg2);border-bottom:1px solid var(--br);padding:0 20px;display:flex;overflow-x:auto;position:sticky;top:52px;z-index:99}
-#nav::-webkit-scrollbar{display:none}
-.ntab{font-family:var(--fui);font-size:12px;font-weight:500;padding:11px 16px;cursor:pointer;color:var(--tm);border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;letter-spacing:.2px}
-.ntab:hover{color:var(--ts)}
-.ntab.active{color:var(--el);border-bottom-color:var(--el)}
-#ct{padding:20px;max-width:1400px;margin:0 auto;position:relative;z-index:1}
-.card{background:var(--bgc);border:1px solid var(--brl);border-radius:var(--rl);padding:18px}
-.cdk{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r)}
-.slbl{font-family:var(--fdt);font-size:9px;font-weight:700;letter-spacing:2px;color:var(--tm);text-transform:uppercase;margin-bottom:14px}
-.slong{background:var(--lgd);border:1px solid var(--lgb);border-radius:var(--rl)}
-.sshort{background:var(--shd);border:1px solid var(--shb);border-radius:var(--rl)}
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-family:var(--fdt);font-size:10px;font-weight:700;letter-spacing:.5px}
-.blong{background:var(--lgd);color:var(--lg);border:1px solid var(--lgb)}
-.bshort{background:var(--shd);color:var(--sh);border:1px solid var(--shb)}
-.bhigh{background:rgba(255,51,85,.15);color:#ff8099}
-.bmed{background:rgba(255,170,0,.15);color:var(--am)}
-.blow{background:rgba(0,255,136,.1);color:#66ffc2}
-.binfo{background:var(--eld);color:var(--el)}
-.pbwrap{width:100%;height:4px;background:var(--br);border-radius:2px;overflow:hidden}
-.pbfill{height:100%;border-radius:2px;transition:width .4s ease}
-.plong{background:linear-gradient(90deg,var(--lg),#00cc70)}
-.pshort{background:linear-gradient(90deg,var(--sh),#cc2244)}
-.flbl{display:block;font-size:11px;font-weight:500;color:var(--ts);margin-bottom:5px;letter-spacing:.3px}
-.inp{width:100%;padding:8px 12px;background:var(--bgi);border:1px solid var(--brl);border-radius:var(--r);color:var(--tp);font-family:var(--fui);font-size:13px;transition:border-color .15s;outline:none}
-.inp:focus{border-color:var(--elb)}
-.inp option{background:var(--bgc)}
-textarea.inp{resize:vertical;min-height:64px;line-height:1.5}
-.btn{padding:8px 16px;border-radius:var(--r);font-family:var(--fui);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--brl);background:var(--bg2);color:var(--tp)}
-.btnp{background:rgba(0,140,200,.2);border:1px solid rgba(0,180,255,.4);color:var(--el)}
-.btnp:hover{background:rgba(0,160,220,.3)}
-.dtbl{width:100%;border-collapse:collapse;font-size:12px}
-.dtbl th{padding:8px 10px;text-align:left;color:var(--tm);font-family:var(--fdt);font-size:9px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--br);font-weight:700}
-.dtbl td{padding:8px 10px;border-bottom:1px solid var(--br);color:var(--td)}
-.dtbl tr:hover td{background:var(--bgh)}
-.dtbl tr:last-child td{border-bottom:none}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.ga{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+:root{--bg:#06090f;--bg2:#0d1420;--bg3:#131c2e;--border:rgba(249,115,22,.18);--border2:rgba(255,255,255,.07);--amber:#f97316;--amber2:#fb923c;--amber3:rgba(249,115,22,.12);--green:#00e87a;--red:#ff2a45;--blue:#38bdf8;--gray:#64748b;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--mono:'JetBrains Mono',monospace;--sans:'Barlow',sans-serif;--cond:'Barlow Condensed',sans-serif;--r:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;overflow-x:hidden}
+input,select,textarea{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);color:var(--text);padding:7px 10px;font-family:var(--mono);font-size:12px;width:100%;outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--amber)}
+select option{background:var(--bg2);color:var(--text)}
+button{cursor:pointer;border:none;font-family:var(--sans);transition:all .15s}
 ::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--brl);border-radius:2px}
-#moverlay{display:none;position:fixed;inset:0;background:rgba(4,8,15,.85);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-#mbox{background:var(--bgc);border:1px solid var(--brl);border-radius:12px;padding:24px;width:480px;max-width:90%;max-height:80vh;overflow-y:auto}
-.notif{position:fixed;top:64px;right:20px;z-index:300;padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;animation:sin .25s ease}
-@keyframes sin{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
-.tfg{display:flex;gap:6px;flex-wrap:wrap}
-.tfb{padding:5px 12px;border-radius:4px;font-size:11px;font-weight:600;font-family:var(--fdt);cursor:pointer;border:1px solid var(--brl);background:var(--bg2);color:var(--tm);transition:all .15s;letter-spacing:.5px}
-.tfb.active{background:var(--eld);border-color:var(--elb);color:var(--el)}
-.dirg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.dirb{padding:10px;border-radius:var(--r);font-weight:700;font-size:14px;cursor:pointer;transition:all .15s;border:1px solid var(--brl);background:var(--bg2);color:var(--tm);font-family:var(--fui)}
-.ua{background:var(--lgd);border-color:var(--lgb);color:var(--lg)}
-.da{background:var(--shd);border-color:var(--shb);color:var(--sh)}
-#mpbox{padding:12px;border-radius:var(--r);background:var(--bgi);border:1px solid var(--brl);font-size:12px;transition:border-color .2s}
-.mcard{background:var(--bgc);border:1px solid var(--br);border-radius:var(--r);padding:14px}
-.mlbl{font-size:10px;color:var(--tm);letter-spacing:.5px;margin-bottom:6px;font-family:var(--fdt);text-transform:uppercase}
-.mval{font-family:var(--fdt);font-size:22px;font-weight:700;color:var(--tp)}
-.amini{background:var(--bg2);border:1px solid var(--br);border-radius:var(--r);padding:10px 12px;transition:border-color .15s}
-.amini:hover{border-color:var(--brl)}
-.crow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--br)}
-.crow:last-child{border-bottom:none}
-.fdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--lg);animation:pulse 2s infinite;margin-left:4px;vertical-align:middle}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-.tlong{color:var(--lg)}.tshort{color:var(--sh)}.tam{color:var(--am)}.tel{color:var(--el)}.tmut{color:var(--tm)}.tsec{color:var(--ts)}
-.tsm{font-size:11px}.txs{font-size:10px}.mono{font-family:var(--fdt)}.bold{font-weight:600}
-.fb{display:flex;align-items:center}.fbet{display:flex;justify-content:space-between;align-items:center}
-.g8{gap:8px}.g12{gap:12px}
-.mb4{margin-bottom:4px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
-.mt4{margin-top:4px}.mt8{margin-top:8px}.wf{width:100%}.tr{text-align:right}.tc{text-align:center}
-@media(max-width:768px){.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.g5{grid-template-columns:1fr 1fr}.g5a{grid-template-columns:1fr 1fr}#ct{padding:12px}}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:rgba(249,115,22,.3)}
+.hidden{display:none!important}
+/* ── HEADER ── */
+#hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.logo{font-family:var(--cond);font-size:22px;font-weight:800;letter-spacing:2px;color:var(--amber);white-space:nowrap}
+.logo span{color:var(--text3)}
+.hstat{background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--r);padding:4px 10px;font-family:var(--mono);font-size:11px;white-space:nowrap}
+.hstat b{color:var(--amber)}
+/* ── TABS ── */
+#tabs{display:flex;gap:4px;padding:8px 16px;background:var(--bg2);border-bottom:.5px solid var(--border2);overflow-x:auto;flex-shrink:0}
+.tab{padding:6px 13px;border-radius:var(--r);font-size:12px;font-family:var(--cond);font-weight:700;letter-spacing:.5px;background:transparent;color:var(--text2);border:.5px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover{background:var(--amber3);color:var(--amber)}
+.tab.active{background:var(--amber3);color:var(--amber);border-color:var(--border)}
+/* ── CONTENT ── */
+#content{padding:14px 16px;min-height:0;overflow-y:auto}
+/* ── PANELS ── */
+.panel{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.panel-title{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--amber);margin-bottom:12px;text-transform:uppercase}
+/* ── GRIDS ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px}
+.grid5{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:7px}
+/* ── STAT CARDS ── */
+.scard{background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 12px}
+.slabel{font-size:9px;color:var(--text3);letter-spacing:.8px;font-family:var(--cond);margin-bottom:3px;text-transform:uppercase}
+.sval{font-family:var(--mono);font-size:17px;font-weight:600;line-height:1.1}
+.schg{font-family:var(--mono);font-size:11px;margin-top:2px}
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:7px 10px;text-align:left;font-family:var(--cond);font-size:10px;letter-spacing:.8px;color:var(--text3);font-weight:700;text-transform:uppercase;border-bottom:.5px solid var(--border2)}
+td{padding:7px 10px;border-bottom:.5px solid rgba(255,255,255,.03);font-family:var(--mono)}
+tr:hover td{background:rgba(255,255,255,.02)}
+/* ── BADGES ── */
+.badge{display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:.5px}
+.b-g{background:rgba(0,232,122,.14);color:var(--green);border:.5px solid rgba(0,232,122,.3)}
+.b-r{background:rgba(255,42,69,.14);color:var(--red);border:.5px solid rgba(255,42,69,.3)}
+.b-a{background:rgba(249,115,22,.14);color:var(--amber);border:.5px solid var(--border)}
+.b-gr{background:rgba(100,116,139,.14);color:var(--gray);border:.5px solid rgba(100,116,139,.2)}
+/* ── BUTTONS ── */
+.btn1{background:var(--amber);color:#000;padding:8px 18px;border-radius:var(--r);font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.5px}
+.btn1:hover{background:var(--amber2)}
+.btn2{background:var(--bg3);color:var(--text2);padding:7px 13px;border-radius:var(--r);border:.5px solid var(--border2);font-family:var(--cond);font-size:12px;font-weight:600}
+.btn2:hover{border-color:var(--border);color:var(--text)}
+.btnd{background:rgba(255,42,69,.12);color:var(--red);padding:4px 9px;border-radius:4px;font-size:11px;border:.5px solid rgba(255,42,69,.25);font-family:var(--cond);font-weight:600}
+.btntf{padding:6px 11px;border-radius:var(--r);border:.5px solid var(--border2);font-family:var(--cond);font-size:11px;font-weight:700;background:var(--bg3);color:var(--text2)}
+.btntf.act{background:rgba(249,115,22,.18);border-color:var(--border);color:var(--amber)}
+/* ── SIGNAL CARDS ── */
+.sigcard{background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--r);padding:10px 12px}
+.sigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-bottom:12px}
+.pbar{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:5px;overflow:hidden}
+/* ── ASSET INPUTS ── */
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
+.ainput{background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--r);padding:8px 10px}
+.akey{font-family:var(--mono);font-size:10px;color:var(--amber);font-weight:700;margin-bottom:3px}
+/* ── CORR MATRIX ── */
+.ccell{width:40px;height:28px;text-align:center;vertical-align:middle;font-family:var(--mono);font-size:10px;cursor:pointer;border-radius:3px;font-weight:600;transition:outline .1s}
+/* ── MODAL ── */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r);padding:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.mtitle{font-family:var(--cond);font-size:16px;font-weight:800;color:var(--amber);margin-bottom:16px;letter-spacing:1px;text-transform:uppercase}
+.flabel{font-size:10px;color:var(--text3);font-family:var(--cond);letter-spacing:.8px;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:700}
+.fgroup{margin-bottom:11px}
+/* ── NOTIF ── */
+#notif{position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:var(--r);font-size:13px;font-family:var(--cond);font-weight:700;letter-spacing:.5px;z-index:999;transition:opacity .3s;opacity:0;pointer-events:none}
+#notif.show{opacity:1}
+#notif.ok{background:rgba(0,232,122,.18);border:.5px solid var(--green);color:var(--green)}
+#notif.err{background:rgba(255,42,69,.18);border:.5px solid var(--red);color:var(--red)}
+/* ── MISC ── */
+.sep{height:.5px;background:var(--border2);margin:12px 0}
+.stitle{font-family:var(--cond);font-size:10px;letter-spacing:.8px;color:var(--text3);text-transform:uppercase;font-weight:700;margin-bottom:8px;margin-top:2px}
+.tip-box{background:rgba(249,115,22,.06);border:.5px solid rgba(249,115,22,.18);border-radius:var(--r);padding:10px 14px;font-size:12px;color:#94a3b8;line-height:1.8}
+/* ── REGIME CARD ── */
+.rcard{border-radius:var(--r);padding:14px 16px;border:.5px solid}
 </style>
 </head>
 <body>
-<header id="hdr">
-  <div class="logo">
-    <div class="logo-icon">M</div>
-    <span class="logo-text">MacroTrader Pro</span>
-    <span class="logo-badge">v2.0</span>
-  </div>
-  <div class="hdr-r">
-    <span id="clock"></span>
-    <button class="hbtn" onclick="exportData()">⬆ Export</button>
-    <button class="hbtn" onclick="importData()">⬇ Import</button>
-    <button class="hbtn danger" onclick="clearAll()">✕ Reset</button>
-  </div>
-</header>
-<nav id="nav">
-  <div class="ntab active" onclick="go('dashboard',this)">📊 Dashboard</div>
-  <div class="ntab" onclick="go('price',this)">💰 Input Harga</div>
-  <div class="ntab" onclick="go('macro',this)">📰 Input Macro</div>
-  <div class="ntab" onclick="go('charts',this)">📈 Charts</div>
-  <div class="ntab" onclick="go('signals',this)">🎯 Signals</div>
-  <div class="ntab" onclick="go('corr',this)">🔗 Correlation</div>
-  <div class="ntab" onclick="go('cal',this)">📅 Calendar</div>
-</nav>
-<div id="ct"></div>
-<div id="moverlay" onclick="if(event.target===this)closeM()"><div id="mbox"></div></div>
-<input type="file" id="fimp" style="display:none" accept=".json" onchange="handleImp(event)">
-<script>
-// ── STATE ──
-const S={
-  tab:'dashboard',tf:'daily',dir:'up',
-  prices:JSON.parse(localStorage.getItem('mtp_p')||'[]'),
-  macro:JSON.parse(localStorage.getItem('mtp_m')||'[]'),
-  trades:JSON.parse(localStorage.getItem('mtp_t')||'[]'),
-  signals:[]
-};
-function save(){
-  localStorage.setItem('mtp_p',JSON.stringify(S.prices));
-  localStorage.setItem('mtp_m',JSON.stringify(S.macro));
-  localStorage.setItem('mtp_t',JSON.stringify(S.trades));
-}
+<div id="notif"></div>
 
-// ── CONSTANTS ──
-const ASSETS={
-  'Crypto':['BTC','ETH','BTC.D','ETH.D','TOTAL','TOTAL2','TOTAL3'],
-  'Currency':['DXY','EUR/USD','GBP/USD','AUD/USD','USD/JPY','NZD/USD','USD/CAD','CHF/USD'],
-  'Commodity':['GOLD','OIL_WTI','OIL_BRENT','SILVER','NATGAS'],
-  'Index':['VIX','SPX','NDX','DOW','RUT','NIKKEI']
-};
-const AA=Object.values(ASSETS).flat();
-const TFS=[{id:'daily',l:'Daily'},{id:'weekly',l:'Weekly'},{id:'monthly',l:'Monthly'},{id:'3month',l:'3 Month'},{id:'yearly',l:'Yearly'}];
-const ML=[
-  {id:'CPI',n:'CPI — Consumer Price Index',u:'%',i:'high',c:'USA'},
-  {id:'NFP',n:'NFP — Non-Farm Payroll',u:'K',i:'high',c:'USA'},
-  {id:'FOMC',n:'FOMC — Interest Rate Decision',u:'%',i:'high',c:'USA'},
-  {id:'PCE',n:'PCE — Price Index',u:'%',i:'high',c:'USA'},
-  {id:'PPI',n:'PPI — Producer Price Index',u:'%',i:'medium',c:'USA'},
-  {id:'GDP',n:'GDP Report',u:'%',i:'high',c:'USA'},
-  {id:'ADP',n:'ADP Employment',u:'K',i:'medium',c:'USA'},
-  {id:'UNEMP',n:'Unemployment Claims',u:'K',i:'high',c:'USA'},
-  {id:'PMI',n:'ISM PMI',u:'pts',i:'medium',c:'USA'},
-  {id:'RETAIL',n:'Retail Sales',u:'%',i:'medium',c:'USA'},
-  {id:'JOLTS',n:'JOLTS Job Openings',u:'M',i:'medium',c:'USA'},
-  {id:'MICH',n:'Michigan Sentiment',u:'pts',i:'medium',c:'USA'},
-  {id:'ECB',n:'ECB Rate Decision',u:'%',i:'high',c:'EU'},
-  {id:'BOJ',n:'BOJ Rate Decision',u:'%',i:'high',c:'JP'},
-  {id:'BOE',n:'BOE Rate Decision',u:'%',i:'high',c:'UK'},
+<!-- MODAL -->
+<div id="modal" class="moverlay hidden" onclick="if(event.target.id==='modal')closeModal()">
+  <div class="mbox"><div id="mcontent"></div></div>
+</div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="logo">BB<span>MACRO</span></div>
+  <div class="hstat">BTC <b id="h-btc">—</b></div>
+  <div class="hstat">ETH <b id="h-eth">—</b></div>
+  <div class="hstat">DXY <b id="h-dxy">—</b></div>
+  <div class="hstat">GOLD <b id="h-gold">—</b></div>
+  <div class="hstat">VIX <b id="h-vix">—</b></div>
+  <div class="hstat" style="margin-left:auto">BIAS <b id="h-bias">—</b></div>
+  <div class="hstat" style="color:var(--text3);font-size:10px" id="h-date"></div>
+  <button class="btn2" style="font-size:11px;padding:5px 10px" onclick="openExportImport()">💾 Backup</button>
+</div>
+
+<!-- TABS -->
+<div id="tabs">
+  <button class="tab active" onclick="go('dash')">📊 Dashboard</button>
+  <button class="tab" onclick="go('prices')">📈 Input Harga</button>
+  <button class="tab" onclick="go('macro')">📋 Macro Log</button>
+  <button class="tab" onclick="go('signals')">⚡ Sinyal</button>
+  <button class="tab" onclick="go('chart')">📉 Chart</button>
+  <button class="tab" onclick="go('corr')">🔗 Korelasi</button>
+  <button class="tab" onclick="go('regime')">🎯 Regime</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA DEFINITIONS
+// ═══════════════════════════════════════════════════════════════
+const ASSETS=[
+  {k:"BTC",  l:"Bitcoin",      cat:"Crypto",   dp:0},
+  {k:"ETH",  l:"Ethereum",     cat:"Crypto",   dp:0},
+  {k:"BTC_D",l:"BTC.D%",       cat:"Crypto",   dp:2},
+  {k:"TOTAL2",l:"TOTAL2($B)",  cat:"Crypto",   dp:1},
+  {k:"TOTAL3",l:"TOTAL3($B)",  cat:"Crypto",   dp:1},
+  {k:"USDT_D",l:"USDT.D%",    cat:"Crypto",   dp:2},
+  {k:"DXY",  l:"DXY",          cat:"Forex",    dp:2},
+  {k:"EURUSD",l:"EUR/USD",     cat:"Forex",    dp:4},
+  {k:"USDJPY",l:"USD/JPY",     cat:"Forex",    dp:2},
+  {k:"AUDUSD",l:"AUD/USD",     cat:"Forex",    dp:4},
+  {k:"GOLD", l:"Gold",         cat:"Komoditas",dp:0},
+  {k:"SILVER",l:"Silver",      cat:"Komoditas",dp:2},
+  {k:"OIL",  l:"WTI Oil",      cat:"Komoditas",dp:2},
+  {k:"SPX",  l:"S&P 500",      cat:"Index",    dp:0},
+  {k:"NDX",  l:"NASDAQ 100",   cat:"Index",    dp:0},
+  {k:"VIX",  l:"VIX",          cat:"Index",    dp:2},
+  {k:"US10Y",l:"US 10Y%",      cat:"Bonds",    dp:3},
 ];
 
-// ── SIGNAL RULES ──
-const RULES={
-  CPI:{
-    beat:[
-      {a:'BTC',d:'SHORT',p:75,r:'CPI Beat → Rate Hike Signal, Risk Off'},
-      {a:'ETH',d:'SHORT',p:77,r:'CPI Beat → Risk Off Mode'},
-      {a:'TOTAL2',d:'SHORT',p:82,r:'CPI Beat → Altcoin Dump Hard'},
-      {a:'TOTAL3',d:'SHORT',p:84,r:'CPI Beat → DeFi Alt Dump'},
-      {a:'DXY',d:'LONG',p:78,r:'CPI Beat → USD Strengthens'},
-      {a:'GOLD',d:'LONG',p:65,r:'CPI Beat → Inflation Hedge'},
-      {a:'EUR/USD',d:'SHORT',p:60,r:'CPI Beat → DXY Inverse'},
-      {a:'AUD/USD',d:'SHORT',p:62,r:'CPI Beat → Risk Off Currency'},
-      {a:'GBP/USD',d:'SHORT',p:58,r:'CPI Beat → DXY Dominance'},
-    ],
-    miss:[
-      {a:'BTC',d:'LONG',p:60,r:'CPI Miss → Less Rate Hike, Risk On'},
-      {a:'ETH',d:'LONG',p:62,r:'CPI Miss → Risk On Sentiment'},
-      {a:'TOTAL2',d:'LONG',p:65,r:'CPI Miss → Alt Season Possible'},
-      {a:'DXY',d:'SHORT',p:55,r:'CPI Miss → USD Weakens'},
-      {a:'EUR/USD',d:'LONG',p:56,r:'CPI Miss → DXY Down'},
-      {a:'GOLD',d:'LONG',p:60,r:'CPI Miss → Rate Cut Expectation'},
-    ]
-  },
-  NFP:{
-    beat:[
-      {a:'BTC',d:'SHORT',p:70,r:'NFP Beat → Rate Hike Risk Naik'},
-      {a:'ETH',d:'SHORT',p:68,r:'NFP Beat → Risk Off Crypto'},
-      {a:'TOTAL2',d:'SHORT',p:72,r:'NFP Beat → Alt Risk Off'},
-      {a:'DXY',d:'LONG',p:72,r:'Strong Jobs → USD Kuat'},
-      {a:'SPX',d:'LONG',p:78,r:'Strong Jobs → Economy Expansion'},
-      {a:'OIL_WTI',d:'LONG',p:65,r:'Strong Jobs → Demand Naik'},
-      {a:'EUR/USD',d:'SHORT',p:55,r:'NFP Beat → DXY Bias Up'},
-    ],
-    miss:[
-      {a:'BTC',d:'LONG',p:65,r:'NFP Miss → Rate Cut Probability Naik'},
-      {a:'ETH',d:'LONG',p:63,r:'NFP Miss → Risk On'},
-      {a:'GOLD',d:'LONG',p:72,r:'Weak Jobs → Safe Haven'},
-      {a:'DXY',d:'SHORT',p:60,r:'Weak Jobs → USD Melemah'},
-      {a:'SPX',d:'SHORT',p:65,r:'Weak Jobs → Economy Concern'},
-    ]
-  },
-  FOMC:{
-    beat:[
-      {a:'BTC',d:'SHORT',p:87,r:'FOMC Hike → Likuiditas Turun Drastis'},
-      {a:'ETH',d:'SHORT',p:85,r:'Rate Hike → Risk Off Crypto'},
-      {a:'TOTAL2',d:'SHORT',p:91,r:'Rate Hike → Alt Crash Mode'},
-      {a:'TOTAL3',d:'SHORT',p:93,r:'Rate Hike → Small Cap Alt Hancur'},
-      {a:'DXY',d:'LONG',p:83,r:'Rate Hike → USD Very Strong'},
-      {a:'GOLD',d:'SHORT',p:60,r:'Rate Hike → Gold Under Pressure'},
-      {a:'USD/JPY',d:'LONG',p:76,r:'Rate Hike → USD/JPY Carry Trade'},
-      {a:'SPX',d:'SHORT',p:70,r:'Rate Hike → Equities Pressure'},
-      {a:'EUR/USD',d:'SHORT',p:72,r:'Rate Hike → USD Dominant'},
-    ],
-    miss:[
-      {a:'BTC',d:'LONG',p:79,r:'Rate Cut → Likuiditas Naik'},
-      {a:'ETH',d:'LONG',p:77,r:'Rate Cut → Risk On'},
-      {a:'TOTAL2',d:'LONG',p:83,r:'Rate Cut → Alt Rally Mode'},
-      {a:'DXY',d:'SHORT',p:76,r:'Rate Cut → USD Melemah'},
-      {a:'GOLD',d:'LONG',p:79,r:'Rate Cut → Gold Rally'},
-      {a:'SPX',d:'LONG',p:80,r:'Rate Cut → Equities Rally'},
-      {a:'EUR/USD',d:'LONG',p:73,r:'Rate Cut → USD Weak'},
-    ]
-  },
-  PCE:{
-    beat:[
-      {a:'BTC',d:'SHORT',p:70,r:'PCE Beat → Fed Hawkish Bias'},
-      {a:'ETH',d:'SHORT',p:68,r:'PCE Beat → Risk Off'},
-      {a:'DXY',d:'LONG',p:68,r:'PCE Beat → USD Strength'},
-      {a:'GOLD',d:'LONG',p:62,r:'PCE Beat → Inflation Hedge'},
-    ],
-    miss:[
-      {a:'BTC',d:'LONG',p:62,r:'PCE Miss → Fed Dovish Bias'},
-      {a:'DXY',d:'SHORT',p:58,r:'PCE Miss → USD Melemah'},
-      {a:'GOLD',d:'LONG',p:64,r:'PCE Miss → Rate Cut Hedge'},
-    ]
-  },
-  PPI:{
-    beat:[
-      {a:'BTC',d:'SHORT',p:62,r:'PPI Beat → Producer Inflation Naik'},
-      {a:'GOLD',d:'LONG',p:60,r:'PPI Beat → Inflation Hedge'},
-      {a:'OIL_WTI',d:'LONG',p:62,r:'PPI Beat → Harga Produksi Naik'},
-      {a:'DXY',d:'LONG',p:55,r:'PPI Beat → USD Bias'},
-    ],
-    miss:[
-      {a:'BTC',d:'LONG',p:56,r:'PPI Miss → Inflasi Mereda'},
-      {a:'DXY',d:'SHORT',p:52,r:'PPI Miss → USD Bias Lemah'},
-    ]
-  },
-  GDP:{
-    beat:[
-      {a:'DXY',d:'LONG',p:65,r:'GDP Beat → Ekonomi Kuat'},
-      {a:'SPX',d:'LONG',p:72,r:'GDP Beat → Equities Naik'},
-      {a:'BTC',d:'LONG',p:56,r:'GDP Beat → Risk On'},
-    ],
-    miss:[
-      {a:'DXY',d:'SHORT',p:60,r:'GDP Miss → Ekonomi Lemah'},
-      {a:'GOLD',d:'LONG',p:66,r:'GDP Miss → Safe Haven'},
-      {a:'BTC',d:'SHORT',p:58,r:'GDP Miss → Risk Off'},
-      {a:'SPX',d:'SHORT',p:68,r:'GDP Miss → Equities Down'},
-    ]
-  },
-  ADP:{
-    beat:[
-      {a:'BTC',d:'SHORT',p:60,r:'ADP Beat → Pre-NFP Hawkish Bias'},
-      {a:'DXY',d:'LONG',p:62,r:'ADP Beat → USD Bias Up'},
-    ],
-    miss:[
-      {a:'BTC',d:'LONG',p:56,r:'ADP Miss → Pre-NFP Dovish Bias'},
-      {a:'DXY',d:'SHORT',p:52,r:'ADP Miss → USD Bias Down'},
-    ]
-  },
-  PMI:{
-    beat:[
-      {a:'BTC',d:'LONG',p:58,r:'PMI Beat → Ekonomi Ekspanding'},
-      {a:'SPX',d:'LONG',p:65,r:'PMI Beat → Manufacturing Up'},
-      {a:'OIL_WTI',d:'LONG',p:60,r:'PMI Beat → Industrial Demand'},
-    ],
-    miss:[
-      {a:'BTC',d:'SHORT',p:55,r:'PMI Miss → Ekonomi Kontraksi'},
-      {a:'GOLD',d:'LONG',p:60,r:'PMI Miss → Safe Haven'},
-      {a:'OIL_WTI',d:'SHORT',p:58,r:'PMI Miss → Demand Turun'},
-    ]
-  },
-  RETAIL:{
-    beat:[
-      {a:'BTC',d:'LONG',p:55,r:'Retail Beat → Consumer Strong'},
-      {a:'SPX',d:'LONG',p:62,r:'Retail Beat → Economy Good'},
-    ],
-    miss:[
-      {a:'BTC',d:'SHORT',p:55,r:'Retail Miss → Consumer Weak'},
-      {a:'SPX',d:'SHORT',p:60,r:'Retail Miss → Economy Concern'},
-      {a:'GOLD',d:'LONG',p:58,r:'Retail Miss → Safe Haven'},
-    ]
-  },
-  UNEMP:{
-    beat:[
-      {a:'BTC',d:'LONG',p:60,r:'High Unemployment → Rate Cut Chance'},
-      {a:'DXY',d:'SHORT',p:58,r:'High Unemployment → USD Lemah'},
-      {a:'GOLD',d:'LONG',p:65,r:'High Unemployment → Safe Haven'},
-    ],
-    miss:[
-      {a:'BTC',d:'SHORT',p:58,r:'Low Unemployment → Rate Hike Risk'},
-      {a:'DXY',d:'LONG',p:60,r:'Low Unemployment → USD Kuat'},
-    ]
-  },
-  ECB:{
-    beat:[
-      {a:'EUR/USD',d:'LONG',p:73,r:'ECB Hawkish → EUR Menguat'},
-      {a:'DXY',d:'SHORT',p:56,r:'ECB Hawkish → Relatif DXY Lemah'},
-    ],
-    miss:[
-      {a:'EUR/USD',d:'SHORT',p:69,r:'ECB Dovish → EUR Melemah'},
-      {a:'DXY',d:'LONG',p:54,r:'ECB Dovish → Relatif DXY Kuat'},
-    ]
-  },
-  BOJ:{
-    beat:[
-      {a:'USD/JPY',d:'SHORT',p:78,r:'BOJ Hike → JPY Menguat'},
-      {a:'GOLD',d:'LONG',p:58,r:'BOJ Hike → Carry Trade Unwind'},
-    ],
-    miss:[
-      {a:'USD/JPY',d:'LONG',p:72,r:'BOJ Dovish → JPY Melemah'},
-    ]
-  },
-  JOLTS:{
-    beat:[{a:'BTC',d:'SHORT',p:58,r:'JOLTS Beat → Labor Hot'}],
-    miss:[{a:'BTC',d:'LONG',p:55,r:'JOLTS Miss → Labor Cooling'}]
-  },
-  MICH:{
-    beat:[{a:'SPX',d:'LONG',p:60,r:'Sentiment Beat → Consumer Optimistic'}],
-    miss:[{a:'GOLD',d:'LONG',p:58,r:'Sentiment Miss → Consumer Fear'},{a:'BTC',d:'SHORT',p:52,r:'Sentiment Miss → Risk Aversion'}]
-  },
-  BOE:{
-    beat:[{a:'GBP/USD',d:'LONG',p:72,r:'BOE Hike → GBP Menguat'}],
-    miss:[{a:'GBP/USD',d:'SHORT',p:68,r:'BOE Dovish → GBP Melemah'}]
-  }
+const L="LONG",S="SHORT",N="NEUTRAL";
+const SIG={
+FOMC_HAWKISH:[{a:"BTC",d:S,p:80,n:"Risk-off; rate naik"},{a:"ETH",d:S,p:82,n:"Ikut BTC lebih volatile"},{a:"TOTAL2",d:S,p:85,n:"Altcoin paling terdampak"},{a:"TOTAL3",d:S,p:87,n:"Pure altcoin turun paling dalam"},{a:"BTC_D",d:L,p:65,n:"Fear = BTC dominance naik"},{a:"USDT_D",d:L,p:75,n:"Lari ke stable"},
+{a:"DXY",d:L,p:83,n:"Rate naik = dollar kuat"},{a:"EURUSD",d:S,p:78,n:"USD menguat vs EUR"},{a:"USDJPY",d:L,p:72,n:"Dollar naik vs Yen"},{a:"AUDUSD",d:S,p:80,n:"Risk-off currency"},
+{a:"GOLD",d:S,p:72,n:"USD kuat + real yields naik"},{a:"SILVER",d:S,p:68,n:"Ikut gold"},{a:"OIL",d:S,p:62,n:"Growth concerns"},
+{a:"SPX",d:S,p:75,n:"Rate naik kompres equity"},{a:"NDX",d:S,p:78,n:"Tech paling rate-sensitive"},{a:"VIX",d:L,p:73,n:"Fear naik"},{a:"US10Y",d:L,p:82,n:"Bond dijual; yields naik"}],
+FOMC_DOVISH:[{a:"BTC",d:L,p:80,n:"Risk-on; likuiditas mengalir"},{a:"ETH",d:L,p:82,n:"Amplifikasi BTC"},{a:"TOTAL2",d:L,p:85,n:"Katalis altcoin season"},{a:"TOTAL3",d:L,p:88,n:"Altcoin season terkuat"},
+{a:"BTC_D",d:S,p:60,n:"Uang ke alts"},{a:"USDT_D",d:S,p:72,n:"Dana ke crypto"},
+{a:"DXY",d:S,p:80,n:"Rate turun = dollar lemah"},{a:"EURUSD",d:L,p:76,n:"EUR naik saat DXY turun"},{a:"USDJPY",d:S,p:70,n:"Dollar melemah"},{a:"AUDUSD",d:L,p:78,n:"Risk-on + dollar lemah"},
+{a:"GOLD",d:L,p:75,n:"Real yields turun"},{a:"SILVER",d:L,p:72,n:"Ikut gold leveraged"},{a:"OIL",d:L,p:65,n:"Optimisme growth"},
+{a:"SPX",d:L,p:78,n:"Rate cut boost equity"},{a:"NDX",d:L,p:80,n:"Tech rally"},{a:"VIX",d:S,p:70,n:"Fear turun"},{a:"US10Y",d:S,p:78,n:"Bond rally; yields turun"}],
+FOMC_INLINE:[{a:"BTC",d:N,p:55,n:"Buy rumor sell news"},{a:"ETH",d:N,p:54,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:55,n:"Status quo"},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:53,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:L,p:58,n:"Relief rally"},{a:"NDX",d:L,p:57,n:""},{a:"VIX",d:S,p:58,n:"Vol turun"},{a:"US10Y",d:N,p:52,n:""}],
+CPI_HOT:[{a:"BTC",d:S,p:75,n:"Fed tetap hawkish"},{a:"ETH",d:S,p:77,n:""},{a:"TOTAL2",d:S,p:80,n:"Altcoin rentan"},{a:"TOTAL3",d:S,p:82,n:""},{a:"BTC_D",d:L,p:60,n:"BTC dominance naik"},{a:"USDT_D",d:L,p:70,n:"Demand stable naik"},
+{a:"DXY",d:L,p:78,n:"Tidak ada cut = DXY naik"},{a:"EURUSD",d:S,p:72,n:""},{a:"USDJPY",d:L,p:68,n:""},{a:"AUDUSD",d:S,p:75,n:"Risk-off + strong USD"},
+{a:"GOLD",d:S,p:65,n:"USD kuat + yields naik"},{a:"SILVER",d:S,p:62,n:""},{a:"OIL",d:N,p:52,n:""},
+{a:"SPX",d:S,p:72,n:"Lebih banyak hike"},{a:"NDX",d:S,p:76,n:"Tech jual"},{a:"VIX",d:L,p:70,n:"Fear naik"},{a:"US10Y",d:L,p:78,n:"Yields naik"}],
+CPI_COOL:[{a:"BTC",d:L,p:73,n:"Disinflasi = pivot hope"},{a:"ETH",d:L,p:75,n:"Leveraged BTC"},{a:"TOTAL2",d:L,p:78,n:"Alts rally"},{a:"TOTAL3",d:L,p:80,n:"Pure alts paling untung"},{a:"BTC_D",d:S,p:58,n:"Uang ke alts"},{a:"USDT_D",d:S,p:68,n:"Dana ke crypto"},
+{a:"DXY",d:S,p:75,n:"Cut path terbuka"},{a:"EURUSD",d:L,p:70,n:""},{a:"USDJPY",d:S,p:65,n:""},{a:"AUDUSD",d:L,p:73,n:"Risk-on + weak USD"},
+{a:"GOLD",d:L,p:70,n:"Real yields turun"},{a:"SILVER",d:L,p:68,n:"Amplified gold"},{a:"OIL",d:L,p:58,n:"Growth optimisme"},
+{a:"SPX",d:L,p:72,n:"Rate cut hopes"},{a:"NDX",d:L,p:75,n:"Tech cinta rate rendah"},{a:"VIX",d:S,p:68,n:"Fear turun"},{a:"US10Y",d:S,p:75,n:"Yields turun"}],
+CPI_INLINE:[{a:"BTC",d:N,p:55,n:"Priced in"},{a:"ETH",d:N,p:53,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:53,n:""},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:53,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:L,p:58,n:"Relief rally"},{a:"NDX",d:L,p:57,n:""},{a:"VIX",d:S,p:57,n:""},{a:"US10Y",d:N,p:52,n:""}],
+NFP_STRONG:[{a:"BTC",d:S,p:65,n:"No rush to cut"},{a:"ETH",d:S,p:67,n:""},{a:"TOTAL2",d:S,p:70,n:"Risk-off"},{a:"TOTAL3",d:S,p:72,n:""},{a:"BTC_D",d:L,p:58,n:""},{a:"USDT_D",d:L,p:62,n:""},
+{a:"DXY",d:L,p:72,n:"Ekonomi kuat = USD kuat"},{a:"EURUSD",d:S,p:68,n:""},{a:"USDJPY",d:L,p:70,n:""},{a:"AUDUSD",d:S,p:67,n:""},
+{a:"GOLD",d:S,p:63,n:"No pivot"},{a:"SILVER",d:S,p:60,n:""},{a:"OIL",d:L,p:58,n:"Demand kuat"},
+{a:"SPX",d:N,p:52,n:"Mixed"},{a:"NDX",d:S,p:58,n:"Rate concern"},{a:"VIX",d:L,p:62,n:""},{a:"US10Y",d:L,p:72,n:"Yields naik"}],
+NFP_WEAK:[{a:"BTC",d:L,p:62,n:"Cut lebih cepat"},{a:"ETH",d:L,p:63,n:""},{a:"TOTAL2",d:L,p:65,n:""},{a:"TOTAL3",d:L,p:67,n:""},{a:"BTC_D",d:S,p:55,n:""},{a:"USDT_D",d:S,p:58,n:""},
+{a:"DXY",d:S,p:68,n:"Ekonomi lemah"},{a:"EURUSD",d:L,p:65,n:""},{a:"USDJPY",d:S,p:63,n:""},{a:"AUDUSD",d:L,p:60,n:""},
+{a:"GOLD",d:L,p:65,n:"Weak USD + cut hope"},{a:"SILVER",d:L,p:62,n:""},{a:"OIL",d:S,p:60,n:"Demand concern"},
+{a:"SPX",d:S,p:60,n:"Recession fear"},{a:"NDX",d:S,p:58,n:""},{a:"VIX",d:L,p:65,n:"Recession fear"},{a:"US10Y",d:S,p:68,n:"Flight to bonds"}],
+NFP_INLINE:[{a:"BTC",d:N,p:53,n:""},{a:"ETH",d:N,p:52,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:53,n:""},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:52,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:N,p:53,n:""},{a:"NDX",d:N,p:52,n:""},{a:"VIX",d:S,p:55,n:""},{a:"US10Y",d:N,p:52,n:""}],
+PCE_HOT:[{a:"BTC",d:S,p:70,n:"Fed gauge panas"},{a:"ETH",d:S,p:72,n:""},{a:"TOTAL2",d:S,p:75,n:""},{a:"TOTAL3",d:S,p:77,n:""},{a:"BTC_D",d:L,p:58,n:""},{a:"USDT_D",d:L,p:67,n:""},
+{a:"DXY",d:L,p:75,n:"No pivot"},{a:"EURUSD",d:S,p:70,n:""},{a:"USDJPY",d:L,p:67,n:""},{a:"AUDUSD",d:S,p:72,n:""},
+{a:"GOLD",d:S,p:63,n:""},{a:"SILVER",d:S,p:60,n:""},{a:"OIL",d:N,p:52,n:""},
+{a:"SPX",d:S,p:70,n:""},{a:"NDX",d:S,p:73,n:""},{a:"VIX",d:L,p:67,n:""},{a:"US10Y",d:L,p:75,n:""}],
+PCE_COOL:[{a:"BTC",d:L,p:70,n:"Pivot hope"},{a:"ETH",d:L,p:72,n:""},{a:"TOTAL2",d:L,p:75,n:""},{a:"TOTAL3",d:L,p:77,n:""},{a:"BTC_D",d:S,p:56,n:""},{a:"USDT_D",d:S,p:65,n:""},
+{a:"DXY",d:S,p:73,n:""},{a:"EURUSD",d:L,p:68,n:""},{a:"USDJPY",d:S,p:62,n:""},{a:"AUDUSD",d:L,p:70,n:""},
+{a:"GOLD",d:L,p:68,n:""},{a:"SILVER",d:L,p:65,n:""},{a:"OIL",d:L,p:58,n:""},
+{a:"SPX",d:L,p:70,n:""},{a:"NDX",d:L,p:73,n:""},{a:"VIX",d:S,p:65,n:""},{a:"US10Y",d:S,p:73,n:""}],
+PCE_INLINE:[{a:"BTC",d:N,p:54,n:""},{a:"ETH",d:N,p:53,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:53,n:""},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:53,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:L,p:57,n:""},{a:"NDX",d:L,p:56,n:""},{a:"VIX",d:S,p:55,n:""},{a:"US10Y",d:N,p:52,n:""}],
+GDP_STRONG:[{a:"BTC",d:L,p:62,n:"Risk-on"},{a:"ETH",d:L,p:63,n:""},{a:"TOTAL2",d:L,p:65,n:""},{a:"TOTAL3",d:L,p:66,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:S,p:58,n:""},
+{a:"DXY",d:L,p:65,n:"Fed holds"},{a:"EURUSD",d:S,p:60,n:""},{a:"USDJPY",d:L,p:63,n:""},{a:"AUDUSD",d:L,p:60,n:""},
+{a:"GOLD",d:S,p:58,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:L,p:65,n:"Demand kuat"},
+{a:"SPX",d:L,p:70,n:"Earnings kuat"},{a:"NDX",d:L,p:68,n:""},{a:"VIX",d:S,p:62,n:""},{a:"US10Y",d:L,p:65,n:""}],
+GDP_WEAK:[{a:"BTC",d:S,p:63,n:"Recession fear"},{a:"ETH",d:S,p:65,n:""},{a:"TOTAL2",d:S,p:68,n:""},{a:"TOTAL3",d:S,p:70,n:""},{a:"BTC_D",d:N,p:52,n:""},{a:"USDT_D",d:L,p:65,n:""},
+{a:"DXY",d:S,p:62,n:"Fed mungkin cut"},{a:"EURUSD",d:L,p:58,n:""},{a:"USDJPY",d:S,p:60,n:"Yen safe haven"},{a:"AUDUSD",d:S,p:65,n:""},
+{a:"GOLD",d:L,p:68,n:"Safe haven"},{a:"SILVER",d:N,p:53,n:""},{a:"OIL",d:S,p:68,n:"Demand lemah"},
+{a:"SPX",d:S,p:70,n:"Recession fear"},{a:"NDX",d:S,p:68,n:""},{a:"VIX",d:L,p:70,n:"Fear spike"},{a:"US10Y",d:S,p:68,n:"Flight to bonds"}],
+GDP_INLINE:[{a:"BTC",d:N,p:53,n:""},{a:"ETH",d:N,p:52,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:53,n:""},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:52,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:N,p:53,n:""},{a:"NDX",d:N,p:52,n:""},{a:"VIX",d:S,p:55,n:""},{a:"US10Y",d:N,p:52,n:""}],
+PPI_HOT:[{a:"BTC",d:S,p:62,n:"CPI concern"},{a:"ETH",d:S,p:63,n:""},{a:"TOTAL2",d:S,p:65,n:""},{a:"TOTAL3",d:S,p:66,n:""},{a:"BTC_D",d:L,p:55,n:""},{a:"USDT_D",d:L,p:60,n:""},
+{a:"DXY",d:L,p:65,n:"Hawkish Fed"},{a:"EURUSD",d:S,p:62,n:""},{a:"USDJPY",d:L,p:60,n:""},{a:"AUDUSD",d:S,p:63,n:""},
+{a:"GOLD",d:S,p:58,n:""},{a:"SILVER",d:S,p:55,n:""},{a:"OIL",d:N,p:52,n:""},
+{a:"SPX",d:S,p:63,n:""},{a:"NDX",d:S,p:65,n:""},{a:"VIX",d:L,p:60,n:""},{a:"US10Y",d:L,p:65,n:""}],
+PPI_COOL:[{a:"BTC",d:L,p:60,n:"CPI mungkin turun"},{a:"ETH",d:L,p:62,n:""},{a:"TOTAL2",d:L,p:63,n:""},{a:"TOTAL3",d:L,p:64,n:""},{a:"BTC_D",d:S,p:53,n:""},{a:"USDT_D",d:S,p:57,n:""},
+{a:"DXY",d:S,p:63,n:""},{a:"EURUSD",d:L,p:60,n:""},{a:"USDJPY",d:S,p:58,n:""},{a:"AUDUSD",d:L,p:60,n:""},
+{a:"GOLD",d:L,p:60,n:""},{a:"SILVER",d:L,p:58,n:""},{a:"OIL",d:L,p:55,n:""},
+{a:"SPX",d:L,p:62,n:""},{a:"NDX",d:L,p:63,n:""},{a:"VIX",d:S,p:58,n:""},{a:"US10Y",d:S,p:63,n:""}],
+PPI_INLINE:[{a:"BTC",d:N,p:52,n:""},{a:"ETH",d:N,p:52,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:52,n:""},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:52,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:N,p:52,n:""},{a:"NDX",d:N,p:52,n:""},{a:"VIX",d:S,p:53,n:""},{a:"US10Y",d:N,p:52,n:""}],
+RETAIL_STRONG:[{a:"BTC",d:N,p:52,n:""},{a:"ETH",d:N,p:52,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:L,p:65,n:"No cuts"},{a:"EURUSD",d:S,p:62,n:""},{a:"USDJPY",d:L,p:60,n:""},{a:"AUDUSD",d:L,p:58,n:""},
+{a:"GOLD",d:S,p:58,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:L,p:62,n:""},
+{a:"SPX",d:L,p:65,n:""},{a:"NDX",d:L,p:63,n:""},{a:"VIX",d:S,p:60,n:""},{a:"US10Y",d:L,p:63,n:""}],
+RETAIL_WEAK:[{a:"BTC",d:S,p:58,n:"Slowdown"},{a:"ETH",d:S,p:58,n:""},{a:"TOTAL2",d:S,p:60,n:""},{a:"TOTAL3",d:S,p:62,n:""},{a:"BTC_D",d:N,p:52,n:""},{a:"USDT_D",d:L,p:58,n:""},
+{a:"DXY",d:S,p:63,n:"Fed mungkin cut"},{a:"EURUSD",d:L,p:60,n:""},{a:"USDJPY",d:S,p:58,n:""},{a:"AUDUSD",d:S,p:62,n:""},
+{a:"GOLD",d:L,p:63,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:S,p:63,n:""},
+{a:"SPX",d:S,p:65,n:""},{a:"NDX",d:S,p:63,n:""},{a:"VIX",d:L,p:63,n:""},{a:"US10Y",d:S,p:62,n:""}],
+RETAIL_INLINE:[{a:"BTC",d:N,p:52,n:""},{a:"ETH",d:N,p:52,n:""},{a:"TOTAL2",d:N,p:52,n:""},{a:"TOTAL3",d:N,p:52,n:""},{a:"BTC_D",d:N,p:50,n:""},{a:"USDT_D",d:N,p:50,n:""},
+{a:"DXY",d:N,p:52,n:""},{a:"EURUSD",d:N,p:52,n:""},{a:"USDJPY",d:N,p:50,n:""},{a:"AUDUSD",d:N,p:52,n:""},
+{a:"GOLD",d:N,p:52,n:""},{a:"SILVER",d:N,p:52,n:""},{a:"OIL",d:N,p:50,n:""},
+{a:"SPX",d:N,p:52,n:""},{a:"NDX",d:N,p:52,n:""},{a:"VIX",d:S,p:53,n:""},{a:"US10Y",d:N,p:52,n:""}],
 };
 
-const CORR={
-  DXY_UP:{s:[{a:'BTC',d:'SHORT',p:72},{a:'ETH',d:'SHORT',p:70},{a:'TOTAL2',d:'SHORT',p:78},{a:'TOTAL3',d:'SHORT',p:80},{a:'GOLD',d:'SHORT',p:55},{a:'EUR/USD',d:'SHORT',p:83},{a:'GBP/USD',d:'SHORT',p:67},{a:'AUD/USD',d:'SHORT',p:70}]},
-  DXY_DOWN:{s:[{a:'BTC',d:'LONG',p:68},{a:'ETH',d:'LONG',p:66},{a:'TOTAL2',d:'LONG',p:73},{a:'GOLD',d:'LONG',p:66},{a:'EUR/USD',d:'LONG',p:80},{a:'AUD/USD',d:'LONG',p:63}]},
-  VIX20:{s:[{a:'BTC',d:'SHORT',p:72},{a:'ETH',d:'SHORT',p:70},{a:'TOTAL2',d:'SHORT',p:78},{a:'GOLD',d:'LONG',p:68},{a:'SPX',d:'SHORT',p:65}]},
-  VIX25:{s:[{a:'BTC',d:'SHORT',p:85},{a:'ETH',d:'SHORT',p:83},{a:'TOTAL2',d:'SHORT',p:90},{a:'TOTAL3',d:'SHORT',p:92},{a:'GOLD',d:'LONG',p:79},{a:'USD/JPY',d:'SHORT',p:72},{a:'SPX',d:'SHORT',p:80}]},
-  VIX30:{s:[{a:'BTC',d:'SHORT',p:93},{a:'ETH',d:'SHORT',p:91},{a:'TOTAL2',d:'SHORT',p:96},{a:'GOLD',d:'LONG',p:86}]},
-  SPX_DOWN:{s:[{a:'BTC',d:'SHORT',p:70},{a:'ETH',d:'SHORT',p:68},{a:'TOTAL2',d:'SHORT',p:75},{a:'GOLD',d:'LONG',p:60}]},
-  SPX_UP:{s:[{a:'BTC',d:'LONG',p:62},{a:'ETH',d:'LONG',p:60}]},
-  BTCD_UP:{s:[{a:'TOTAL2',d:'SHORT',p:80},{a:'ETH',d:'SHORT',p:72},{a:'TOTAL3',d:'SHORT',p:85}]},
-  BTCD_DOWN:{s:[{a:'TOTAL2',d:'LONG',p:78},{a:'ETH',d:'LONG',p:70},{a:'TOTAL3',d:'LONG',p:82}]}
+const MTYPES={
+  FOMC:{l:"FOMC Rate Decision",o:[{k:"HAWKISH",l:"🦅 Hawkish",b:-2},{k:"DOVISH",l:"🕊️ Dovish",b:2},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
+  CPI:{l:"CPI",o:[{k:"HOT",l:"🔥 Panas",b:-2},{k:"COOL",l:"❄️ Cool",b:2},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
+  NFP:{l:"NFP",o:[{k:"STRONG",l:"💪 Kuat",b:-1},{k:"WEAK",l:"📉 Lemah",b:1},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
+  PCE:{l:"PCE Price Index",o:[{k:"HOT",l:"🔥 Panas",b:-2},{k:"COOL",l:"❄️ Cool",b:2},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
+  GDP:{l:"GDP Growth",o:[{k:"STRONG",l:"💪 Kuat",b:1},{k:"WEAK",l:"📉 Lemah",b:-1},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
+  PPI:{l:"PPI",o:[{k:"HOT",l:"🔥 Panas",b:-1},{k:"COOL",l:"❄️ Cool",b:1},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
+  RETAIL:{l:"Retail Sales",o:[{k:"STRONG",l:"💪 Kuat",b:1},{k:"WEAK",l:"📉 Lemah",b:-1},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
 };
 
-// ── ENGINE ──
-function engine(){
-  const map={};
-  const now=Date.now();
-  const fresh=d=>now-new Date(d).getTime()<7*86400000;
-  [...S.macro].filter(m=>fresh(m.date)).sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(m=>{
-    const R=RULES[m.event]; if(!R) return;
-    const beat=m.actual>m.expected;
-    const mag=Math.abs(m.actual-m.expected)/(Math.abs(m.expected)||1);
-    const rs=beat?R.beat:R.miss;
-    rs.forEach(r=>{
-      let p=r.p;
-      if(mag>0.1)p=Math.min(95,p+5);
-      if(mag<0.02)p=Math.max(48,p-5);
-      const k=`${r.a}_${r.d}`;
-      if(!map[k]) map[k]={asset:r.a,dir:r.d,prob:p,reason:r.r,type:'MACRO',event:m.event,date:m.date,count:1,sources:[m.event],fresh:true};
-      else{map[k].count++;map[k].sources.push(m.event);map[k].prob=Math.min(96,map[k].prob+Math.floor(p*.12));}
+const CORR_KEYS=["BTC","ETH","DXY","GOLD","SILVER","OIL","SPX","NDX","VIX"];
+const HIST_CORR=[[100,92,-75,55,52,40,65,70,-80],[92,100,-78,52,48,38,62,68,-82],[-75,-78,100,-70,-65,-35,-58,-62,35],[55,52,-70,100,85,40,45,42,55],[52,48,-65,85,100,45,42,40,50],[40,38,-35,40,45,100,50,45,-45],[65,62,-58,45,42,50,100,93,-92],[70,68,-62,42,40,45,93,100,-90],[-80,-82,35,55,50,-45,-92,-90,100]];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let ST={
+  tab:"dash",
+  priceHistory:[],
+  macroHistory:[],
+  chartAsset:"BTC",
+  chartTf:"1M",
+  corrTf:"3M",
+  sigEvent:"FOMC",
+  sigOut:"",
+  chartInst:null,
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STORAGE (localStorage)
+// ═══════════════════════════════════════════════════════════════
+function lsGet(k){try{const v=localStorage.getItem("bbm_"+k);return v?JSON.parse(v):null;}catch{return null;}}
+function lsSet(k,v){try{localStorage.setItem("bbm_"+k,JSON.stringify(v));return true;}catch{return false;}}
+function loadAll(){
+  ST.priceHistory=lsGet("prices")||[];
+  ST.macroHistory=lsGet("macro")||[];
+  ST.priceHistory.sort((a,b)=>a.date.localeCompare(b.date));
+  ST.macroHistory.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function savePrices(){lsSet("prices",ST.priceHistory);}
+function saveMacro(){lsSet("macro",ST.macroHistory);}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+function fmt(v,dp){if(v===null||v===undefined||v==="")return"—";return Number(v).toFixed(dp);}
+function pct(a,b){if(!a||!b||b===0)return null;return(a-b)/b*100;}
+function pctStr(v,sf=2){if(v===null||v===undefined)return"—";return(v>=0?"+":"")+v.toFixed(sf)+"%";}
+function pctCol(v){if(v===null||v===undefined)return"#64748b";return v>0?"#00e87a":v<0?"#ff2a45":"#64748b";}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function today(){return new Date().toISOString().split("T")[0];}
+
+function calcBias(mh,days=90){
+  if(!mh||!mh.length)return 0;
+  const cut=new Date();cut.setDate(cut.getDate()-days);
+  const recent=mh.filter(e=>new Date(e.date)>=cut);
+  let sc=0;
+  recent.forEach(e=>{const mt=MTYPES[e.type];if(mt){const oc=mt.o.find(o=>o.k===e.outcome);if(oc)sc+=oc.b;}});
+  return Math.max(-10,Math.min(10,sc));
+}
+function biasInfo(sc){
+  if(sc>=6)return{l:"STRONG RISK-ON 🟢",c:"#00e87a",bc:"rgba(0,232,122,.3)"};
+  if(sc>=2)return{l:"MILD RISK-ON 🟡",c:"#86efac",bc:"rgba(0,232,122,.15)"};
+  if(sc>-2)return{l:"NEUTRAL ⚪",c:"#94a3b8",bc:"rgba(100,116,139,.2)"};
+  if(sc>-6)return{l:"MILD RISK-OFF 🟠",c:"#fca5a5",bc:"rgba(255,42,69,.15)"};
+  return{l:"STRONG RISK-OFF 🔴",c:"#ff2a45",bc:"rgba(255,42,69,.3)"};
+}
+
+function outBadge(oc){
+  if(oc==="HOT"||oc==="HAWKISH"||oc==="WEAK")return`<span class="badge b-r">${oc}</span>`;
+  if(oc==="COOL"||oc==="DOVISH"||oc==="STRONG")return`<span class="badge b-g">${oc}</span>`;
+  return`<span class="badge b-a">${oc}</span>`;
+}
+function dirBadge(d){
+  if(d===L)return`<span style="color:#00e87a;font-size:11px;font-weight:700;font-family:var(--mono)">▲ LONG</span>`;
+  if(d===S)return`<span style="color:#ff2a45;font-size:11px;font-weight:700;font-family:var(--mono)">▼ SHORT</span>`;
+  return`<span style="color:#64748b;font-size:11px;font-family:var(--mono)">● NETRAL</span>`;
+}
+
+function filterByTf(ph,tf){
+  if(!ph||!ph.length)return ph;
+  if(tf==="ALL")return ph;
+  const ref=ph[ph.length-1]?.date;if(!ref)return ph;
+  const d=new Date(ref);
+  if(tf==="1W")d.setDate(d.getDate()-7);
+  else if(tf==="2W")d.setDate(d.getDate()-14);
+  else if(tf==="1M")d.setDate(d.getDate()-30);
+  else if(tf==="3M")d.setDate(d.getDate()-90);
+  else if(tf==="1Y")d.setDate(d.getDate()-365);
+  return ph.filter(p=>new Date(p.date)>=d);
+}
+
+function pearson(x,y){
+  const n=x.length;if(n<5)return null;
+  const mx=x.reduce((a,b)=>a+b,0)/n,my=y.reduce((a,b)=>a+b,0)/n;
+  let num=0,dx2=0,dy2=0;
+  for(let i=0;i<n;i++){num+=(x[i]-mx)*(y[i]-my);dx2+=(x[i]-mx)**2;dy2+=(y[i]-my)**2;}
+  const den=Math.sqrt(dx2*dy2);return den===0?0:Math.round(num/den*100);
+}
+
+function calcCorr(ph,keys){
+  const ret={};keys.forEach(k=>{ret[k]=[];});
+  for(let i=1;i<ph.length;i++){
+    const pv=ph[i-1].prices,cv=ph[i].prices;
+    keys.forEach(k=>{
+      ret[k].push((pv[k]&&cv[k]&&pv[k]>0)?((cv[k]-pv[k])/pv[k]):null);
     });
+  }
+  const mat={};
+  keys.forEach(k1=>{mat[k1]={};keys.forEach(k2=>{
+    if(k1===k2){mat[k1][k2]=100;return;}
+    const px=[],py=[];
+    ret[k1].forEach((v,i)=>{if(v!==null&&ret[k2][i]!==null){px.push(v);py.push(ret[k2][i]);}});
+    mat[k1][k2]=pearson(px,py);
+  });});
+  return mat;
+}
+
+function corrBg(v){
+  if(v===null)return"#1a1a2e";if(v===100)return"#1e2030";
+  if(v>=70)return"rgba(0,200,100,.22)";if(v>=40)return"rgba(0,200,100,.1)";
+  if(v>=-40)return"rgba(100,116,139,.1)";if(v>=-70)return"rgba(255,42,69,.1)";
+  return"rgba(255,42,69,.22)";
+}
+function corrCol(v){
+  if(v===null||v===100)return"#475569";
+  if(v>=40)return"#00e87a";if(v<=-40)return"#ff2a45";return"#64748b";
+}
+
+function notif(msg,type="ok"){
+  const el=document.getElementById("notif");
+  el.textContent=msg;el.className="show "+type;
+  setTimeout(()=>el.className="",3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HEADER
+// ═══════════════════════════════════════════════════════════════
+function updateHeader(){
+  const la=ST.priceHistory.slice(-1)[0];
+  const pr=ST.priceHistory.slice(-2)[0];
+  function setH(id,k,dp){
+    const el=document.getElementById(id);if(!el)return;
+    const v=la?.prices?.[k],pv=pr?.prices?.[k];
+    if(!v){el.textContent="—";el.style.color="#64748b";return;}
+    const c=pct(v,pv);
+    el.textContent=fmt(v,dp)+(c!==null?" "+(c>=0?"+":"")+c.toFixed(2)+"%":"");
+    el.style.color=c===null?"#f97316":c>0?"#00e87a":c<0?"#ff2a45":"#94a3b8";
+  }
+  setH("h-btc","BTC",0);setH("h-eth","ETH",0);setH("h-dxy","DXY",2);setH("h-gold","GOLD",0);setH("h-vix","VIX",2);
+  const bias=calcBias(ST.macroHistory);
+  const bi=biasInfo(bias);
+  const bEl=document.getElementById("h-bias");
+  if(bEl){bEl.textContent=bi.l.replace(/[🟢🟡⚪🟠🔴]/g,"")+" ("+bias+")";bEl.style.color=bi.c;}
+  const dEl=document.getElementById("h-date");
+  if(dEl)dEl.textContent=new Date().toLocaleDateString("id-ID",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB: DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function renderDash(){
+  const ph=ST.priceHistory,mh=ST.macroHistory;
+  const la=ph.slice(-1)[0],pr1=ph.slice(-2)[0];
+  const refDate=la?.date?new Date(la.date):new Date();
+  function nearPrev(days){const cut=new Date(refDate);cut.setDate(cut.getDate()-days);return ph.filter(p=>new Date(p.date)<=refDate&&new Date(p.date)>=cut)[0]||ph[0]||null;}
+  const p1d=pr1||null,p1w=nearPrev(7),p1m=nearPrev(30),p3m=nearPrev(90),p1y=nearPrev(365);
+  const bias=calcBias(mh,90);const bi=biasInfo(bias);
+  const recentM=[...mh].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+
+  // Key stats
+  let statsHtml="";
+  ["BTC","ETH","DXY","GOLD","VIX","US10Y"].forEach(k=>{
+    const a=ASSETS.find(x=>x.k===k);
+    const v=la?.prices?.[k];const pv=p1d?.prices?.[k];
+    const c=pct(v,pv);
+    statsHtml+=`<div class="scard">
+      <div class="slabel">${a?.l||k}</div>
+      <div class="sval" style="color:${v?"#e2e8f0":"#475569"}">${fmt(v,a?.dp)}</div>
+      <div class="schg" style="color:${pctCol(c)}">${c!==null?pctStr(c):"—"}</div>
+    </div>`;
   });
-  const lp={};
-  S.prices.forEach(p=>{if(!lp[p.asset]||new Date(p.date)>new Date(lp[p.asset].date))lp[p.asset]=p;});
-  function ac(rs,ev,dt,re){
-    rs.forEach(r=>{
-      const k=`${r.a}_${r.d}`;
-      if(!map[k]) map[k]={asset:r.a,dir:r.d,prob:r.p,reason:re,type:'CORR',event:ev,date:dt,count:1,sources:[ev],fresh:dt?fresh(dt):false};
-      else{map[k].count++;map[k].sources.push(ev);map[k].prob=Math.min(96,map[k].prob+Math.floor(r.p*.12));}
+
+  // Multi-TF table
+  let tRows="";
+  const showKeys=["BTC","ETH","BTC_D","USDT_D","DXY","GOLD","VIX","US10Y","SPX","NDX","EURUSD"];
+  showKeys.forEach(k=>{
+    const a=ASSETS.find(x=>x.k===k);
+    const v=la?.prices?.[k];if(!v)return;
+    const c=[pct(v,p1d?.prices?.[k]),pct(v,p1w?.prices?.[k]),pct(v,p1m?.prices?.[k]),pct(v,p3m?.prices?.[k]),pct(v,p1y?.prices?.[k])];
+    tRows+=`<tr>
+      <td><span style="color:#f97316;font-weight:600">${k}</span> <span style="color:#64748b;font-size:10px">${a?.l}</span></td>
+      <td style="text-align:right">${fmt(v,a?.dp)}</td>
+      ${c.map(x=>`<td style="text-align:right;color:${pctCol(x)}">${pctStr(x)}</td>`).join("")}
+    </tr>`;
+  });
+
+  // Recent macro
+  let mRows=recentM.map(e=>{
+    const mt=MTYPES[e.type];const oc=mt?.o.find(o=>o.k===e.outcome);
+    return`<tr>
+      <td style="color:#64748b">${e.date}</td>
+      <td style="font-weight:500;color:#e2e8f0">${e.type}</td>
+      <td>${outBadge(e.outcome)}</td>
+      <td style="color:#94a3b8">${esc(e.actual||"—")}</td>
+      <td style="color:#64748b;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis">${esc(e.notes||"")}</td>
+      <td><span style="color:${oc?.b>0?"#00e87a":oc?.b<0?"#ff2a45":"#64748b"};font-family:var(--mono);font-size:11px">${oc?.b>=0?"+":""+(oc?.b||0)}</span></td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("content").innerHTML=`
+  <div>
+    <!-- BIAS -->
+    <div class="panel" style="border-color:${bi.bc}">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:9px;color:#64748b;letter-spacing:.8px;font-family:var(--cond);margin-bottom:5px">MACRO BIAS — 90 HARI TERAKHIR</div>
+          <div style="font-size:24px;font-weight:800;color:${bi.c};font-family:var(--cond);letter-spacing:1px">${bi.l}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px;font-family:var(--mono)">Score: <span style="color:${bi.c}">${bias>=0?"+":""}${bias}</span> / 10 &nbsp;·&nbsp; ${mh.length} event logged</div>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:#475569;margin-bottom:3px;font-family:var(--cond)"><span>RISK OFF</span><span>NEUTRAL</span><span>RISK ON</span></div>
+          <div style="height:8px;background:var(--bg3);border:.5px solid var(--border2);border-radius:4px;overflow:hidden;position:relative">
+            <div style="width:${Math.abs(bias)*5}%;height:100%;background:${bi.c};margin-left:${bias>=0?50:50+bias*5}%;border-radius:3px"></div>
+            <div style="position:absolute;left:50%;top:0;width:1px;height:100%;background:rgba(255,255,255,.15)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- KEY PRICES -->
+    <div class="panel">
+      <div class="panel-title">Harga Terkini ${la?`<span style="font-weight:400;color:#64748b;font-size:10px">(${la.date})</span>`:""}</div>
+      <div class="grid4">${statsHtml}${!la?'<div style="color:#475569;font-size:13px;grid-column:1/-1;padding:10px 0">Belum ada data. Buka <b style="color:#f97316">Input Harga</b> untuk mulai mencatat.</div>':""}</div>
+    </div>
+    <!-- MULTI-TF TABLE -->
+    ${tRows?`<div class="panel">
+      <div class="panel-title">Perubahan Multi-Timeframe</div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Aset</th><th style="text-align:right">Harga</th><th style="text-align:right">1D</th><th style="text-align:right">1W</th><th style="text-align:right">1M</th><th style="text-align:right">3M</th><th style="text-align:right">1Y</th></tr></thead>
+        <tbody>${tRows}</tbody>
+      </table></div>
+    </div>`:""}
+    <!-- RECENT MACRO -->
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="panel-title" style="margin-bottom:0">Event Macro Terbaru</div>
+        <button class="btn1" style="font-size:11px;padding:6px 14px" onclick="go('macro')">+ Tambah Event</button>
+      </div>
+      ${mRows?`<div style="overflow-x:auto"><table>
+        <thead><tr><th>Tanggal</th><th>Event</th><th>Outcome</th><th>Actual</th><th>Notes</th><th>Bias</th></tr></thead>
+        <tbody>${mRows}</tbody>
+      </table></div>`:`<div style="color:#475569;padding:14px 0;font-size:13px">Belum ada event. Klik tombol di atas.</div>`}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB: INPUT HARGA
+// ═══════════════════════════════════════════════════════════════
+function renderPrices(){
+  const cats=[...new Set(ASSETS.map(a=>a.cat))];
+  let ig="";
+  cats.forEach(cat=>{
+    ig+=`<div style="margin-bottom:14px"><div class="stitle">${cat}</div><div class="agrid">`;
+    ASSETS.filter(a=>a.cat===cat).forEach(a=>{
+      ig+=`<div class="ainput">
+        <div class="akey">${a.k}</div>
+        <div style="font-size:10px;color:#475569;margin-bottom:5px">${a.l}</div>
+        <input type="number" step="any" id="pi_${a.k}" placeholder="—">
+      </div>`;
+    });
+    ig+="</div></div>";
+  });
+
+  let hRows=ST.priceHistory.slice().reverse().slice(0,15).map(e=>{
+    const k5=["BTC","ETH","DXY","GOLD","VIX"];
+    return`<tr>
+      <td style="color:#f97316;white-space:nowrap">${e.date}</td>
+      ${k5.map(k=>`<td>${fmt(e.prices[k],ASSETS.find(a=>a.k===k)?.dp)}</td>`).join("")}
+      <td><span style="color:#64748b;font-size:10px">${Object.keys(e.prices).length} aset</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn2" style="padding:3px 7px;font-size:10px;margin-right:4px" onclick="loadDatePrices('${e.date}')">📂</button>
+        <button class="btnd" onclick="deletePrice('${e.date}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("content").innerHTML=`
+  <div>
+    <div class="panel">
+      <div class="panel-title">Input / Update Harga Harian</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <div><label class="flabel">Tanggal</label><input type="date" id="pi_date" value="${today()}" style="max-width:170px"></div>
+        <button class="btn1" onclick="savePrice()">💾 Simpan</button>
+        <button class="btn2" onclick="loadDatePrices(document.getElementById('pi_date').value)">📂 Load Tanggal</button>
+        <button class="btn2" onclick="clearPriceForm()">🗑 Clear Form</button>
+      </div>
+      ${ig}
+      <div class="tip-box">
+        💡 <b style="color:#f97316">Tips:</b> Ambil harga dari TradingView. TOTAL2/TOTAL3 masukkan dalam miliyard USD. BTC.D dan USDT.D dalam persen. Tidak perlu isi semua kolom setiap hari.
+      </div>
+    </div>
+    ${hRows?`<div class="panel">
+      <div class="panel-title">Riwayat (${ST.priceHistory.length} entries)</div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Tanggal</th><th>BTC</th><th>ETH</th><th>DXY</th><th>Gold</th><th>VIX</th><th>Aset</th><th></th></tr></thead>
+        <tbody>${hRows}</tbody>
+      </table></div>
+    </div>`:""}
+  </div>`;
+}
+
+function savePrice(){
+  const date=document.getElementById("pi_date")?.value;
+  if(!date){notif("Pilih tanggal!","err");return;}
+  const prices={};
+  ASSETS.forEach(a=>{const el=document.getElementById("pi_"+a.k);if(el&&el.value!=="")prices[a.k]=parseFloat(el.value);});
+  if(!Object.keys(prices).length){notif("Isi minimal 1 harga!","err");return;}
+  const idx=ST.priceHistory.findIndex(p=>p.date===date);
+  if(idx>=0)ST.priceHistory[idx]={date,prices:{...ST.priceHistory[idx].prices,...prices}};
+  else{ST.priceHistory.push({date,prices});ST.priceHistory.sort((a,b)=>a.date.localeCompare(b.date));}
+  savePrices();updateHeader();renderPrices();notif("✓ Harga disimpan — "+date);
+}
+
+function loadDatePrices(date){
+  const e=ST.priceHistory.find(p=>p.date===date);
+  if(!e){notif("Tidak ada data untuk tanggal ini","err");return;}
+  const pidate=document.getElementById("pi_date");
+  if(pidate)pidate.value=date;
+  ASSETS.forEach(a=>{const el=document.getElementById("pi_"+a.k);if(el)el.value=e.prices[a.k]!==undefined?e.prices[a.k]:"";});
+  notif("✓ Data "+date+" dimuat ke form");
+}
+
+function clearPriceForm(){
+  ASSETS.forEach(a=>{const el=document.getElementById("pi_"+a.k);if(el)el.value="";});
+}
+
+function deletePrice(date){
+  if(!confirm("Hapus data harga "+date+"?"))return;
+  ST.priceHistory=ST.priceHistory.filter(p=>p.date!==date);
+  savePrices();updateHeader();renderPrices();notif("✓ Dihapus");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB: MACRO LOG
+// ═══════════════════════════════════════════════════════════════
+function renderMacro(){
+  let rows=[...ST.macroHistory].sort((a,b)=>b.date.localeCompare(a.date)).map(e=>{
+    return`<tr>
+      <td style="color:#f97316;white-space:nowrap">${e.date}</td>
+      <td style="font-weight:600">${e.type}</td>
+      <td style="color:#94a3b8">${esc(e.prev||"—")}</td>
+      <td style="color:#94a3b8">${esc(e.exp||"—")}</td>
+      <td style="color:#e2e8f0;font-weight:500">${esc(e.actual||"—")}</td>
+      <td>${outBadge(e.outcome)}</td>
+      <td style="color:#64748b;font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${esc(e.notes||"")}</td>
+      <td style="white-space:nowrap">
+        <button class="btn2" style="padding:3px 8px;font-size:10px;margin-right:3px" onclick="sigFromMacro('${e.type}','${e.outcome}')">⚡</button>
+        <button class="btnd" onclick="delMacro('${e.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("content").innerHTML=`
+  <div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="panel-title" style="margin-bottom:0">Macro Event Log (${ST.macroHistory.length} events)</div>
+        <button class="btn1" onclick="openMacroModal()">+ Tambah Event</button>
+      </div>
+      ${rows?`<div style="overflow-x:auto"><table>
+        <thead><tr><th>Tanggal</th><th>Event</th><th>Prev</th><th>Exp</th><th>Actual</th><th>Outcome</th><th>Notes</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`:`<div style="text-align:center;padding:40px;color:#475569">
+        <div style="font-size:32px;margin-bottom:10px">📋</div>
+        <div>Belum ada event. Klik <b style="color:#f97316">+ Tambah Event</b> setelah data macro dirilis.</div>
+      </div>`}
+    </div>
+    <div class="panel" style="background:rgba(249,115,22,.04);border-color:rgba(249,115,22,.15)">
+      <div class="panel-title">Panduan Mencatat Event</div>
+      <div style="font-size:12px;color:#64748b;line-height:2">
+        1. Tunggu data macro dirilis &nbsp;→&nbsp; bandingkan <b style="color:#e2e8f0">Actual</b> vs <b style="color:#e2e8f0">Expected</b><br>
+        2. Pilih <b style="color:#e2e8f0">Outcome</b>: HOT/HAWKISH jika di atas ekspektasi, COOL/DOVISH jika di bawah, IN-LINE jika sesuai<br>
+        3. Klik <b style="color:#f97316">⚡</b> untuk langsung lihat sinyal trading semua aset<br>
+        4. Input harga sebelum dan sesudah event di <b style="color:#f97316">Input Harga</b> untuk tracking akurasi sinyal
+      </div>
+    </div>
+  </div>`;
+}
+
+function openMacroModal(){
+  const eOpts=Object.entries(MTYPES).map(([k,v])=>`<option value="${k}">${v.l}</option>`).join("");
+  document.getElementById("mcontent").innerHTML=`
+    <div class="mtitle">+ Tambah Macro Event</div>
+    <div class="fgroup"><label class="flabel">Tanggal Event</label><input type="date" id="mf_d" value="${today()}"></div>
+    <div class="fgroup"><label class="flabel">Tipe Event</label><select id="mf_t" onchange="updOutOpts()">${eOpts}</select></div>
+    <div class="grid2">
+      <div class="fgroup"><label class="flabel">Previous</label><input type="text" id="mf_pv" placeholder="+0.2%"></div>
+      <div class="fgroup"><label class="flabel">Expected</label><input type="text" id="mf_ex" placeholder="+0.2%"></div>
+    </div>
+    <div class="fgroup"><label class="flabel">Actual (hasil rilis)</label><input type="text" id="mf_ac" placeholder="+0.1%" style="font-size:14px;font-weight:600"></div>
+    <div class="fgroup"><label class="flabel">Outcome</label><select id="mf_oc"></select></div>
+    <div class="fgroup"><label class="flabel">Catatan (opsional)</label><input type="text" id="mf_nt" placeholder="e.g. Big miss; pasar shocked"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn1" onclick="saveMacroEv()">💾 Simpan</button>
+      <button class="btn2" onclick="closeModal()">Batal</button>
+    </div>`;
+  updOutOpts();
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function updOutOpts(){
+  const t=document.getElementById("mf_t")?.value||"FOMC";
+  const mt=MTYPES[t];if(!mt)return;
+  const sel=document.getElementById("mf_oc");
+  if(sel)sel.innerHTML=mt.o.map(o=>`<option value="${o.k}">${o.l} (bias: ${o.b>=0?"+":""}${o.b})</option>`).join("");
+}
+
+function saveMacroEv(){
+  const date=document.getElementById("mf_d")?.value;
+  const type=document.getElementById("mf_t")?.value;
+  const outcome=document.getElementById("mf_oc")?.value;
+  if(!date||!type||!outcome){notif("Isi semua field wajib!","err");return;}
+  const id=date+"_"+type+"_"+Date.now();
+  const ev={id,date,type,outcome,prev:document.getElementById("mf_pv")?.value||"",exp:document.getElementById("mf_ex")?.value||"",actual:document.getElementById("mf_ac")?.value||"",notes:document.getElementById("mf_nt")?.value||""};
+  ST.macroHistory.push(ev);
+  ST.macroHistory.sort((a,b)=>a.date.localeCompare(b.date));
+  saveMacro();closeModal();updateHeader();renderMacro();notif("✓ Event "+type+" disimpan");
+}
+
+function delMacro(id){
+  if(!confirm("Hapus event ini?"))return;
+  ST.macroHistory=ST.macroHistory.filter(e=>e.id!==id);
+  saveMacro();updateHeader();renderMacro();notif("✓ Dihapus");
+}
+
+function sigFromMacro(type,outcome){ST.sigEvent=type;ST.sigOut=outcome;go("signals");}
+function closeModal(){document.getElementById("modal").classList.add("hidden");}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB: SINYAL
+// ═══════════════════════════════════════════════════════════════
+function renderSignals(){
+  const eOpts=Object.entries(MTYPES).map(([k,v])=>`<option value="${k}"${k===ST.sigEvent?" selected":""}>${v.l}</option>`).join("");
+  const mt=MTYPES[ST.sigEvent];
+  const oOpts=mt?.o.map(o=>`<option value="${o.k}"${o.k===ST.sigOut?" selected":""}>${o.l}</option>`).join("")||"";
+  const key=ST.sigEvent+"_"+ST.sigOut;
+  const sigs=SIG[key]||[];
+  const cats=["Crypto","Forex","Komoditas","Index","Bonds"];
+
+  // Accuracy check
+  let accNote="";
+  if(sigs.length&&ST.priceHistory.length>=2){
+    const macroEv=[...ST.macroHistory].filter(e=>e.type===ST.sigEvent&&e.outcome===ST.sigOut).sort((a,b)=>b.date.localeCompare(a.date))[0];
+    if(macroEv){
+      const before=ST.priceHistory.filter(p=>p.date<=macroEv.date).slice(-1)[0];
+      const after=ST.priceHistory.filter(p=>p.date>macroEv.date)[0];
+      if(before&&after){
+        let ok=0,tot=0;
+        const accMap={};
+        sigs.forEach(s=>{
+          const pb=before.prices[s.a],pa=after.prices[s.a];
+          if(pb&&pa){
+            const chg=pct(pa,pb);
+            const predicted=(s.d===L&&chg>0)||(s.d===S&&chg<0)||(s.d===N&&Math.abs(chg)<1);
+            accMap[s.a]={chg,predicted};
+            if(s.d!==N){tot++;if(predicted)ok++;}
+          }
+        });
+        if(tot>0){
+          const pct2=Math.round(ok/tot*100);
+          accNote=`<div style="background:rgba(249,115,22,.07);border:.5px solid rgba(249,115,22,.2);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:12px">
+            🎯 <b style="color:#f97316">Accuracy Check</b> (${macroEv.type} ${macroEv.outcome} — ${macroEv.date}): 
+            <span style="color:${pct2>=60?"#00e87a":"#ff2a45"};font-weight:700">${ok}/${tot} sinyal benar (${pct2}%)</span>
+            berdasarkan data hargamu (${before.date} → ${after.date})
+          </div>`;
+          sigs.forEach(s=>{if(accMap[s.a])s._acc=accMap[s.a];});
+        }
+      }
+    }
+  }
+
+  let sigHtml="";
+  if(!ST.sigOut){
+    sigHtml=`<div style="text-align:center;padding:30px;color:#475569"><div style="font-size:32px;margin-bottom:10px">⚡</div>Pilih Event + Outcome untuk lihat sinyal.</div>`;
+  } else if(!sigs.length){
+    sigHtml=`<div style="color:#475569;padding:14px">Data tidak tersedia.</div>`;
+  } else {
+    cats.forEach(cat=>{
+      const cs=sigs.filter(s=>ASSETS.find(a=>a.k===s.a)?.cat===cat);
+      if(!cs.length)return;
+      sigHtml+=`<div class="stitle">${cat}</div><div class="sigrid">`;
+      cs.forEach(s=>{
+        const bc=s.d===L?"#00e87a":s.d===S?"#ff2a45":"#475569";
+        const acc=s._acc?`<div style="font-size:10px;margin-top:4px;padding:2px 6px;border-radius:3px;background:${s._acc.predicted?"rgba(0,232,122,.1)":"rgba(255,42,69,.1)"};color:${s._acc.predicted?"#00e87a":"#ff2a45"}">Actual: ${pctStr(s._acc.chg)} ${s._acc.predicted?"✓":"✗"}</div>`:"";
+        sigHtml+=`<div class="sigcard">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+            <span style="color:#f97316;font-size:12px;font-weight:700;font-family:var(--mono)">${s.a}</span>
+            ${dirBadge(s.d)}
+          </div>
+          <div class="pbar"><div style="width:${s.p}%;height:100%;background:${bc};border-radius:2px"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:5px">
+            <span style="font-size:10px;color:#64748b">${s.n||"—"}</span>
+            <span style="font-size:10px;font-family:var(--mono);color:#64748b">${s.p}%</span>
+          </div>${acc}
+        </div>`;
+      });
+      sigHtml+="</div>";
     });
   }
-  const dxy=lp['DXY'];
-  if(dxy&&dxy.change_pct>=0.5) dxy.direction==='up'?ac(CORR.DXY_UP.s,'DXY',dxy.date,`DXY ↑${dxy.change_pct}% → Inverse Crypto/FX`):ac(CORR.DXY_DOWN.s,'DXY',dxy.date,`DXY ↓${dxy.change_pct}% → Bullish Crypto`);
-  const vix=lp['VIX'];
-  if(vix&&vix.price){const v=vix.price;if(v>=30)ac(CORR.VIX30.s,'VIX',vix.date,`VIX ${v} EXTREME → Mass Risk Off`);else if(v>=25)ac(CORR.VIX25.s,'VIX',vix.date,`VIX ${v} DANGER → Risk Off Mode`);else if(v>=20)ac(CORR.VIX20.s,'VIX',vix.date,`VIX ${v} Elevated → Caution`);}
-  const spx=lp['SPX'];
-  if(spx&&spx.change_pct>=1) spx.direction==='down'?ac(CORR.SPX_DOWN.s,'SPX',spx.date,`SPX ↓${spx.change_pct}% → Equities Risk Off`):ac(CORR.SPX_UP.s,'SPX',spx.date,`SPX ↑${spx.change_pct}% → Risk On`);
-  const btcd=lp['BTC.D'];
-  if(btcd&&btcd.change_pct>=0.5) btcd.direction==='up'?ac(CORR.BTCD_UP.s,'BTC.D',btcd.date,`BTC.D ↑${btcd.change_pct}% → Alt Rotation Out`):ac(CORR.BTCD_DOWN.s,'BTC.D',btcd.date,`BTC.D ↓${btcd.change_pct}% → Alt Season Bias`);
-  S.signals=Object.values(map).sort((a,b)=>b.prob-a.prob);
-  return S.signals;
-}
 
-// ── HELPERS ──
-function lp(){const m={};S.prices.forEach(p=>{if(!m[p.asset]||new Date(p.date)>new Date(m[p.asset].date))m[p.asset]=p;});return m;}
-function pb(p,d){return `<div class="pbwrap"><div class="pbfill ${d==='LONG'?'plong':'pshort'}" style="width:${p}%"></div></div>`;}
-function bx(t,c){return `<span class="badge ${c}">${t}</span>`;}
-function ds(d){return d==='up'||d==='LONG'?'tlong':'tshort';}
-function nr(n){return Number(n).toLocaleString();}
-
-// ── NAV ──
-function go(id,el){
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  S.tab=id;
-  render(id);
-}
-
-// ── ROUTER ──
-function render(p){
-  const c=document.getElementById('ct');
-  if(p==='dashboard')c.innerHTML=pgDash();
-  if(p==='price')c.innerHTML=pgPrice();
-  if(p==='macro')c.innerHTML=pgMacro();
-  if(p==='charts'){c.innerHTML=pgCharts();setTimeout(initCharts,150);}
-  if(p==='signals')c.innerHTML=pgSigs();
-  if(p==='corr')c.innerHTML=pgCorr();
-  if(p==='cal')c.innerHTML=pgCal();
-}
-
-// ═══ PAGE: DASHBOARD ═══
-function pgDash(){
-  engine();
-  const sigs=S.signals;
-  const prices=lp();
-  const topA=['BTC','ETH','TOTAL2','DXY','GOLD'];
-  const cards=topA.map(a=>{
-    const sig=sigs.find(s=>s.asset===a);
-    const pr=prices[a];
-    return `<div class="card" style="text-align:center;padding:14px 10px">
-      <div class="slbl" style="margin-bottom:8px">${a}</div>
-      ${pr?`<div class="mono bold" style="font-size:12px;color:var(--ts);margin-bottom:3px">${pr.price?nr(pr.price):'-'}</div><div class="bold tsm ${ds(pr.direction)}">${pr.direction==='up'?'↑':'↓'} ${pr.change_pct}%</div>`:'<div class="tmut tsm">—</div>'}
-      <div style="height:1px;background:var(--br);margin:10px 0"></div>
-      ${sig?`<div class="bold" style="font-size:15px;color:${sig.dir==='LONG'?'var(--lg)':'var(--sh)'}">${sig.dir}</div>
-             <div style="margin:6px 0 4px">${pb(sig.prob,sig.dir)}</div>
-             <div class="mono txs tsec">${sig.prob}%</div>`:`<div class="tmut tsm">No signal</div>`}
-    </div>`;
-  }).join('');
-  const rec=[...S.macro].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);
-  const hc=sigs.filter(s=>s.prob>=75).slice(0,8);
-  const vix=prices['VIX'],dxy=prices['DXY'];
-  let vs='—',vc='var(--tm)',ds2='—',dc='var(--tm)';
-  if(vix){const v=vix.price;if(v>=30){vs=`${v} EXTREME`;vc='var(--sh)'}else if(v>=25){vs=`${v} DANGER`;vc='#ff6688'}else if(v>=20){vs=`${v} ELEVATED`;vc='var(--am)'}else{vs=`${v} NORMAL`;vc='var(--lg)'}}
-  if(dxy){ds2=`${dxy.direction==='up'?'↑':'↓'} ${dxy.change_pct}%`;dc=dxy.direction==='up'?'var(--sh)':'var(--lg)';}
-  const lc=sigs.filter(s=>s.dir==='LONG').length,sc2=sigs.filter(s=>s.dir==='SHORT').length;
-  const sent=lc>sc2?{l:'BULLISH',c:'var(--lg)'}:sc2>lc?{l:'BEARISH',c:'var(--sh)'}:{l:'NEUTRAL',c:'var(--am)'};
-  return `
-    <div class="g5 mb16">${cards}</div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div class="fbet mb12">
-          <div class="slbl" style="margin:0">🎯 Active Signals</div>
-          <div style="display:flex;gap:8px">${bx(`↑ LONG: ${lc}`,'blong')} ${bx(`↓ SHORT: ${sc2}`,'bshort')}</div>
-        </div>
-        ${sigs.length===0?`<p class="tmut tsm">Belum ada data. Input harga & macro terlebih dahulu.</p>`:
-          sigs.slice(0,12).map(s=>`<div class="crow">
-            <div style="width:64px">${bx(s.dir,s.dir==='LONG'?'blong':'bshort')}</div>
-            <div style="width:80px;font-weight:600;font-size:14px">${s.asset}</div>
-            <div style="flex:1">
-              <div class="tsec tsm">${s.reason}</div>
-              <div class="txs tmut mt4">${s.type} · ${s.date} ${s.fresh?'<span class="fdot"></span>':''} ${s.count>1?`· <span class="tam bold">${s.count} Sources</span>`:''}</div>
-            </div>
-            <div style="width:90px">
-              ${pb(s.prob,s.dir)}
-              <div class="tr txs mt4" style="color:${s.dir==='LONG'?'var(--lg)':'var(--sh)'};font-weight:700;font-family:var(--fdt)">${s.prob}%</div>
-            </div>
-          </div>`).join('')}
+  document.getElementById("content").innerHTML=`
+  <div>
+    <div class="panel">
+      <div class="panel-title">⚡ Signal Lab</div>
+      <div class="grid2" style="margin-bottom:14px">
+        <div><label class="flabel">Event Macro</label>
+          <select id="se" onchange="ST.sigEvent=this.value;ST.sigOut='';renderSignals()">${eOpts}</select></div>
+        <div><label class="flabel">Outcome / Hasil</label>
+          <select id="so" onchange="ST.sigOut=this.value;renderSignals()">${oOpts}</select></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="card">
-          <div class="slbl">📊 Market Pulse</div>
-          <div style="display:grid;gap:10px">
-            <div class="mcard"><div class="mlbl">Sentiment</div><div class="mval" style="color:${sent.c};font-size:17px">${sent.l}</div></div>
-            <div class="mcard"><div class="mlbl">VIX Level</div><div class="mval" style="color:${vc};font-size:13px">${vs}</div></div>
-            <div class="mcard"><div class="mlbl">DXY Trend</div><div class="mval" style="color:${dc};font-size:13px">${ds2}</div></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div class="mcard"><div class="mlbl">Macro</div><div class="mval" style="font-size:18px">${S.macro.length}</div></div>
-              <div class="mcard"><div class="mlbl">Prices</div><div class="mval" style="font-size:18px">${S.prices.length}</div></div>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="slbl">📰 Latest Macro</div>
-          ${rec.length===0?`<p class="tmut tsm">No macro events yet.</p>`:
-            rec.map(m=>{const b=m.actual>m.expected;return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--br)">
-              <div><div class="bold tsm">${m.event}</div><div class="txs tmut">${m.date} ${m.period?'· '+m.period:''}</div></div>
-              <div class="tr">${bx(b?'BEAT':'MISS',b?'bshort':'blong')}<div class="txs tmut mt4 mono">${m.actual} vs ${m.expected}</div></div>
-            </div>`;}).join('')}
-        </div>
-      </div>
+      ${accNote}${sigHtml}
     </div>
-    ${hc.length>0?`<div class="card">
-      <div class="slbl">🔥 High Confidence Signals ≥75%</div>
-      <div class="ga">
-        ${hc.map(s=>`<div class="${s.dir==='LONG'?'slong':'sshort'}" style="padding:14px;border-radius:8px">
-          <div class="fbet mb8"><span style="font-weight:700;font-size:16px">${s.asset}</span><span style="font-weight:800;font-size:16px;color:${s.dir==='LONG'?'var(--lg)':'var(--sh)'}">${s.dir}</span></div>
-          ${pb(s.prob,s.dir)}
-          <div class="fbet mt4"><span class="txs tsec">${s.reason.substring(0,36)}…</span><span class="mono bold" style="color:${s.dir==='LONG'?'var(--lg)':'var(--sh)'};font-size:13px">${s.prob}%</span></div>
-          ${s.count>1?`<div class="txs tam mt4">↑ ${s.count} confirming sources</div>`:''}
-        </div>`).join('')}
-      </div>
-    </div>`:''}`;
+  </div>`;
+  const so=document.getElementById("so");if(so)so.value=ST.sigOut||"";
 }
 
-// ═══ PAGE: PRICE INPUT ═══
-function pgPrice(){
-  const aOpts=Object.entries(ASSETS).map(([cat,lst])=>`<optgroup label="${cat}">${lst.map(a=>`<option>${a}</option>`).join('')}</optgroup>`).join('');
-  const rec=[...S.prices].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
-  return `<div style="display:grid;grid-template-columns:300px 1fr;gap:16px">
-    <div>
-      <div class="card mb16">
-        <div class="slbl">💰 Input Harga Aset</div>
-        <div class="mb12"><label class="flbl">Timeframe</label>
-          <div class="tfg">${TFS.map((t,i)=>`<button class="tfb${i===0?' active':''}" onclick="setTF('${t.id}',this)">${t.l}</button>`).join('')}</div>
-        </div>
-        <div class="mb12"><label class="flbl">Tanggal</label><input type="date" class="inp" id="pd" value="${new Date().toISOString().split('T')[0]}"></div>
-        <div class="mb12"><label class="flbl">Aset</label><select class="inp" id="pa">${aOpts}</select></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" class="mb12">
-          <div><label class="flbl">Harga</label><input type="number" class="inp" id="pp" placeholder="45000" step="0.01"></div>
-          <div><label class="flbl">Change (%)</label><input type="number" class="inp" id="pc" placeholder="2.5" step="0.01"></div>
-        </div>
-        <div class="mb12"><label class="flbl">Arah</label>
-          <div class="dirg">
-            <button class="dirb ua" onclick="setDir('up',this)" id="bup">↑ NAIK</button>
-            <button class="dirb" onclick="setDir('down',this)" id="bdn">↓ TURUN</button>
-          </div>
-        </div>
-        <div class="mb16"><label class="flbl">Notes</label><textarea class="inp" id="pn" placeholder="e.g. Setelah CPI release..."></textarea></div>
-        <button class="btn btnp wf" onclick="saveP()">+ Simpan Data Harga</button>
+// ═══════════════════════════════════════════════════════════════
+// TAB: CHART
+// ═══════════════════════════════════════════════════════════════
+function renderChart(){
+  const aOpts=ASSETS.map(a=>`<option value="${a.k}"${a.k===ST.chartAsset?" selected":""}>${a.k} — ${a.l}</option>`).join("");
+  const tfs=["1W","2W","1M","3M","1Y","ALL"];
+  const tfBtns=tfs.map(tf=>`<button class="btntf${tf===ST.chartTf?" act":""}" onclick="ST.chartTf='${tf}';renderChart()">${tf}</button>`).join("");
+  document.getElementById("content").innerHTML=`
+  <div>
+    <div class="panel">
+      <div class="panel-title">Price Chart</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+        <div style="flex:1;min-width:180px"><label class="flabel">Aset</label>
+          <select id="ch-a" onchange="ST.chartAsset=this.value;drawChart()">${aOpts}</select></div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">${tfBtns}</div>
       </div>
-      <div class="card">
-        <div class="slbl">📋 Panduan Timeframe</div>
-        ${[['Daily','Input setiap hari setelah close. Untuk tracking harian & macro event.'],['Weekly','Rekap mingguan. Lihat trend jangka pendek.'],['Monthly','Rekap bulanan. Korelasi CPI, NFP, FOMC.'],['3 Month','Data quarterly. GDP, earnings season.'],['Yearly','Snapshot tahunan. Big picture analysis.']]
-          .map(g=>`<div style="padding:8px 0;border-bottom:1px solid var(--br)"><div class="bold tsm tel">${g[0]}</div><div class="txs tmut mt4">${g[1]}</div></div>`).join('')}
-      </div>
+      ${ST.priceHistory.length<2
+        ?`<div style="text-align:center;padding:40px;color:#475569"><div style="font-size:32px;margin-bottom:8px">📉</div>Butuh minimal 2 entri harga.</div>`
+        :`<div style="position:relative;height:320px"><canvas id="price-chart"></canvas></div>`}
     </div>
-    <div class="card">
-      <div class="fbet mb12">
-        <div class="slbl" style="margin:0">📋 History Harga</div>
-        <select class="inp" style="width:160px;padding:5px 8px;font-size:12px" onchange="filterP(this.value)">
-          <option value="">Semua Aset</option>${AA.map(a=>`<option>${a}</option>`).join('')}
-        </select>
-      </div>
-      <div id="ph" style="overflow-x:auto">${tblP(rec)}</div>
+    <div class="tip-box" style="margin-top:0">
+      💡 Garis vertikal <span style="color:#f97316">oranye</span> = tanggal macro event yang kamu log. Perhatikan pergerakan harga sebelum dan sesudahnya.
     </div>
+  </div>`;
+  if(ST.priceHistory.length>=2)setTimeout(drawChart,60);
+}
+
+function drawChart(){
+  const canvas=document.getElementById("price-chart");if(!canvas)return;
+  if(ST.chartInst){ST.chartInst.destroy();ST.chartInst=null;}
+  const ph=filterByTf(ST.priceHistory,ST.chartTf);
+  const asset=ST.chartAsset;
+  const adp=ASSETS.find(a=>a.k===asset)?.dp||0;
+  const data=ph.map(p=>({x:p.date,y:p.prices[asset]||null})).filter(d=>d.y!==null);
+  if(data.length<2)return;
+  const macroOnChart=ST.macroHistory.filter(e=>data.some(d=>d.x===e.date));
+  const ctx=canvas.getContext("2d");
+  const gr=ctx.createLinearGradient(0,0,0,canvas.height);
+  const chg=pct(data[data.length-1].y,data[0].y);
+  const lc=chg===null||chg>=0?"#00e87a":"#ff2a45";
+  gr.addColorStop(0,lc.replace("#","rgba(")+",0.25)".replace("rgba(","rgba("));
+  gr.addColorStop(1,"rgba(0,0,0,0)");
+  const gc=ctx.createLinearGradient(0,0,0,canvas.height);
+  gc.addColorStop(0,chg>=0?"rgba(0,232,122,0.28)":"rgba(255,42,69,0.28)");
+  gc.addColorStop(1,"rgba(0,0,0,0)");
+  ST.chartInst=new Chart(ctx,{
+    type:"line",
+    data:{datasets:[{data,borderColor:lc,borderWidth:2,pointRadius:2.5,pointBackgroundColor:lc,fill:true,backgroundColor:gc,tension:0.3,spanGaps:true}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{type:"category",ticks:{color:"#475569",font:{family:"'JetBrains Mono'",size:9},maxRotation:45,autoSkip:true,maxTicksLimit:12},grid:{color:"rgba(255,255,255,.03)"}},
+        y:{ticks:{color:"#94a3b8",font:{family:"'JetBrains Mono'",size:9},callback:v=>fmt(v,adp)},grid:{color:"rgba(255,255,255,.05)"}},
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:"#0d1420",borderColor:"rgba(249,115,22,.3)",borderWidth:1,titleColor:"#f97316",bodyColor:"#e2e8f0",titleFont:{family:"'Barlow Condensed'",size:13,weight:"bold"},bodyFont:{family:"'JetBrains Mono'",size:12},
+          callbacks:{label:c=>`${asset}: ${fmt(c.parsed.y,adp)} | ${pctStr(pct(c.parsed.y,data[0].y))}`}},
+      },animation:{duration:300},
+    },
+  });
+  // Draw macro markers manually
+  if(macroOnChart.length){
+    const orig=ST.chartInst.draw.bind(ST.chartInst);
+    const plugin={id:"macroLines",afterDraw(chart){
+      const ctx2=chart.ctx;
+      macroOnChart.forEach(ev=>{
+        const idx=data.findIndex(d=>d.x===ev.date);if(idx<0)return;
+        const x=chart.scales.x.getPixelForIndex(idx);
+        ctx2.save();ctx2.strokeStyle="rgba(249,115,22,.55)";ctx2.lineWidth=1;ctx2.setLineDash([3,3]);
+        ctx2.beginPath();ctx2.moveTo(x,chart.chartArea.top);ctx2.lineTo(x,chart.chartArea.bottom);ctx2.stroke();
+        ctx2.fillStyle="#f97316";ctx2.font="bold 9px 'JetBrains Mono'";ctx2.fillText(ev.type,x+2,chart.chartArea.top+11);
+        ctx2.restore();
+      });
+    }};
+    Chart.register(plugin);
+    ST.chartInst.update();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB: KORELASI
+// ═══════════════════════════════════════════════════════════════
+function renderCorr(){
+  const tfs=["1M","3M","1Y","ALL"];
+  const tfBtns=tfs.map(tf=>`<button class="btntf${tf===ST.corrTf?" act":""}" onclick="ST.corrTf='${tf}';renderCorr()">${tf}</button>`).join("");
+  const ph=filterByTf(ST.priceHistory,ST.corrTf);
+  const hasData=ph.length>=6;
+  let matHtml="";
+
+  if(hasData){
+    const mat=calcCorr(ph,CORR_KEYS);
+    matHtml=`<div style="overflow-x:auto;margin-top:10px">
+      <table style="border-collapse:separate;border-spacing:3px">
+        <thead><tr><td style="width:44px"></td>${CORR_KEYS.map(k=>`<td style="text-align:center;font-size:9px;color:#475569;font-family:var(--cond);font-weight:700;padding:2px">${k}</td>`).join("")}</tr></thead>
+        <tbody>${CORR_KEYS.map((k1)=>`<tr>
+          <td style="font-size:9px;color:#475569;text-align:right;padding-right:5px;font-family:var(--cond);font-weight:700">${k1}</td>
+          ${CORR_KEYS.map(k2=>{const v=mat[k1]?.[k2];return`<td class="ccell" style="background:${corrBg(v)};color:${corrCol(v)}">${v===100?"—":(v!==null?v:"?")}</td>`;}).join("")}
+        </tr>`).join("")}</tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:#64748b">
+      <span>Kuat + (≥70) <span style="color:#00e87a">●</span></span>
+      <span>Moderat + (40–70) <span style="color:#00e87a;opacity:.5">●</span></span>
+      <span>Lemah <span style="color:#475569">●</span></span>
+      <span>Moderat − (−70~−40) <span style="color:#ff2a45;opacity:.5">●</span></span>
+      <span>Kuat − (≤−70) <span style="color:#ff2a45">●</span></span>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:#475569">Dari <b style="color:#f97316">${ph.length}</b> entri harga · Berbasis % daily returns</div>`;
+  } else {
+    matHtml=`<div style="text-align:center;padding:30px;color:#475569">Butuh min. 6 entri untuk timeframe <b style="color:#f97316">${ST.corrTf}</b>. Saat ini: ${ph.length} entri.</div>`;
+  }
+
+  // Histogram corr table
+  let hRows=CORR_KEYS.map((k1,i)=>CORR_KEYS.slice(i+1).map((k2,j)=>{
+    const hv=HIST_CORR[i][i+j+1];
+    const mv=hasData?calcCorr(ph,CORR_KEYS)[k1]?.[k2]:null;
+    const diff=mv!==null&&hv!==null?mv-hv:null;
+    return`<tr>
+      <td style="color:#f97316;font-weight:600">${k1}</td>
+      <td style="color:#f97316;font-weight:600">${k2}</td>
+      <td style="color:${corrCol(hv)};font-family:var(--mono)">${hv!==null?hv:"—"}</td>
+      <td style="color:${mv!==null?corrCol(mv):"#475569"};font-family:var(--mono)">${mv!==null?mv:"—"}</td>
+      <td style="color:${diff===null?"#475569":Math.abs(diff)>20?"#f97316":"#64748b"};font-family:var(--mono);font-size:11px">${diff!==null?(diff>=0?"+":"")+diff:"—"}</td>
+    </tr>`;
+  })).flat().join("");
+
+  document.getElementById("content").innerHTML=`
+  <div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div class="panel-title" style="margin-bottom:0">Korelasi dari Data Kamu</div>
+        <div style="display:flex;gap:4px">${tfBtns}</div>
+      </div>
+      ${matHtml}
+    </div>
+    ${hRows?`<div class="panel">
+      <div class="panel-title">Perbandingan: Historis vs Data Kamu</div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Aset 1</th><th>Aset 2</th><th>Historis</th><th>Data Kamu</th><th>Diff</th></tr></thead>
+        <tbody>${hRows}</tbody>
+      </table></div>
+      <div style="font-size:11px;color:#475569;margin-top:8px">Diff > ±20 = korelasi berubah signifikan dari historis</div>
+    </div>`:""}
   </div>`;
 }
 
-function tblP(d){
-  if(!d.length) return `<p class="tmut tsm">Belum ada data harga.</p>`;
-  return `<table class="dtbl"><thead><tr><th>Tanggal</th><th>TF</th><th>Aset</th><th class="tr">Price</th><th class="tr">Change</th><th>Arah</th><th>Notes</th><th></th></tr></thead><tbody>
-  ${d.map(p=>`<tr><td class="mono">${p.date}</td><td>${bx(p.timeframe,'binfo')}</td><td class="bold">${p.asset}</td><td class="mono tr">${p.price?nr(p.price):'-'}</td><td class="mono tr ${p.direction==='up'?'tlong':'tshort'}">${p.direction==='up'?'+':'-'}${p.change_pct}%</td><td class="tc" style="font-size:15px">${p.direction==='up'?'🟢':'🔴'}</td><td class="tmut txs">${p.notes||'—'}</td><td><button onclick="delP('${p.id}')" style="color:var(--sh);background:none;border:none;cursor:pointer;font-size:13px">✕</button></td></tr>`).join('')}
-  </tbody></table>`;
-}
+// ═══════════════════════════════════════════════════════════════
+// TAB: REGIME DETECTOR
+// ═══════════════════════════════════════════════════════════════
+function renderRegime(){
+  const ph=ST.priceHistory;
+  const la=ph.slice(-1)[0];
+  const pr3m=filterByTf(ph,"3M")[0]||ph[0];
+  const mh=ST.macroHistory;
+  const bias=calcBias(mh,90);
+  const bi=biasInfo(bias);
 
-// ═══ PAGE: MACRO INPUT ═══
-function pgMacro(){
-  const mOpts=ML.map(e=>`<option value="${e.id}" data-u="${e.u}" data-i="${e.i}" data-c="${e.c}">${e.n}</option>`).join('');
-  const rec=[...S.macro].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
-  return `<div style="display:grid;grid-template-columns:320px 1fr;gap:16px">
-    <div>
-      <div class="card mb16">
-        <div class="slbl">📰 Input Hasil Macro</div>
-        <div class="mb12"><label class="flbl">Tanggal Release</label><input type="date" class="inp" id="md" value="${new Date().toISOString().split('T')[0]}"></div>
-        <div class="mb12"><label class="flbl">Event</label><select class="inp" id="me" onchange="updUnit(this)">${mOpts}</select></div>
-        <div class="mb12"><label class="flbl">Periode Data</label><input class="inp" id="mpr" placeholder="e.g. May 2025, Q1 2025"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" class="mb12">
-          <div><label class="flbl">Expected <span id="ul" class="tel">(%)</span></label><input type="number" class="inp" id="mx" placeholder="3.1" step="0.01" oninput="lprev()"></div>
-          <div><label class="flbl">Actual <span id="ul2" class="tel">(%)</span></label><input type="number" class="inp" id="ma" placeholder="3.4" step="0.01" oninput="lprev()"></div>
+  // Dominance analysis
+  const btd=la?.prices?.BTC_D;
+  const usdtd=la?.prices?.USDT_D;
+  const tot2=la?.prices?.TOTAL2;
+  const tot3=la?.prices?.TOTAL3;
+  const btd3m=pr3m?.prices?.BTC_D;
+  const tot2_3m=pr3m?.prices?.TOTAL2;
+  const vix=la?.prices?.VIX;
+  const dxy=la?.prices?.DXY;
+  const dxy3m=pr3m?.prices?.DXY;
+
+  // Regime assessment
+  let cryptoRegime="",forexRegime="",overallRegime="",tradeHints=[];
+
+  if(btd!==undefined){
+    if(btd>58){cryptoRegime=`<span style="color:#f97316">BTC SEASON</span> — BTC.D tinggi (${fmt(btd,1)}%). Fokus BTC/ETH saja. Altcoin underperform.`;}
+    else if(btd>52&&btd<=58){cryptoRegime=`<span style="color:#94a3b8">TRANSISI</span> — BTC.D moderat (${fmt(btd,1)}%). BTC masih unggul tapi alts mulai bergerak.`;}
+    else{cryptoRegime=`<span style="color:#00e87a">ALTCOIN SEASON POTENTIAL</span> — BTC.D rendah (${fmt(btd,1)}%). Alts berpeluang outperform.`;}
+  }
+  if(usdtd!==undefined){
+    if(usdtd>8){cryptoRegime+=" | ⚠️ USDT.D tinggi ("+fmt(usdtd,1)+"%) = bearish — banyak yang pegang stable.";}
+    else if(usdtd<5){cryptoRegime+=" | ✅ USDT.D rendah ("+fmt(usdtd,1)+"%) = bullish — dana sudah deploy ke market.";}
+  }
+  if(dxy!==undefined&&dxy3m!==undefined){
+    const dxyChg=pct(dxy,dxy3m);
+    if(dxyChg!==null){
+      if(dxyChg>2)forexRegime=`<span style="color:#ff2a45">DXY BULLISH (+${dxyChg.toFixed(1)}% 3M)</span> — Dollar menguat = tekanan pada crypto & gold.`;
+      else if(dxyChg<-2)forexRegime=`<span style="color:#00e87a">DXY BEARISH (${dxyChg.toFixed(1)}% 3M)</span> — Dollar melemah = kondusif untuk crypto & gold.`;
+      else forexRegime=`<span style="color:#94a3b8">DXY NEUTRAL (${dxyChg.toFixed(1)}% 3M)</span> — Tidak ada tekanan signifikan dari dollar.`;
+    }
+  }
+  if(vix!==undefined){
+    if(vix>30)forexRegime+=" | 🔴 VIX TINGGI ("+fmt(vix,1)+") = extreme fear";
+    else if(vix>20)forexRegime+=" | 🟡 VIX ELEVATED ("+fmt(vix,1)+")";
+    else forexRegime+=" | 🟢 VIX RENDAH ("+fmt(vix,1)+") = low fear";
+  }
+
+  // Trade hints
+  if(bias>=4&&btd!==undefined&&btd<55){tradeHints.push("✅ Bias bullish + BTC.D turun = kondisi altcoin season. Pertimbangkan TOTAL2/TOTAL3 LONG.");}
+  if(bias<=-4){tradeHints.push("⚠️ Bias bearish kuat. Prioritas NETRAL atau SHORT jangka pendek. Tunggu konfirmasi CPI/PCE data.");}
+  if(vix!==undefined&&vix>25){tradeHints.push("⚠️ VIX tinggi = volatilitas besar. Perkecil ukuran posisi atau tunggu VIX turun ke <20.");}
+  if(dxy!==undefined&&dxy3m!==undefined&&pct(dxy,dxy3m)>3){tradeHints.push("⚠️ DXY trending naik signifikan. Hindari LONG Gold & Crypto dulu.");}
+  if(usdtd!==undefined&&usdtd>8){tradeHints.push("⚠️ USDT.D > 8% = banyak orang pegang stable. Jangan FOMO masuk sebelum USDT.D turun.");}
+  if(!tradeHints.length&&bias>=0){tradeHints.push("ℹ️ Kondisi netral. Ikuti sinyal event macro terbaru untuk arah trading.");}
+
+  // Altcoin rotation
+  let altHtml="";
+  if(btd!==undefined&&tot2!==undefined){
+    const btdTrend=btd3m?pct(btd,btd3m):null;
+    const tot2Trend=tot2_3m?pct(tot2,tot2_3m):null;
+    altHtml=`<div class="panel">
+      <div class="panel-title">Altcoin Rotation Radar</div>
+      <div class="grid3">
+        <div class="scard">
+          <div class="slabel">BTC Dominance</div>
+          <div class="sval">${fmt(btd,1)}%</div>
+          <div class="schg" style="color:${pctCol(btdTrend)}">${btdTrend!==null?pctStr(btdTrend)+" (3M)":"—"}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">${btd>55?"BTC Season":"Alts berpeluang"}</div>
         </div>
-        <div id="mpbox" class="mb12"><p class="tmut txs">Isi Expected & Actual untuk preview...</p></div>
-        <div class="mb16"><label class="flbl">Notes</label><textarea class="inp" id="mn" placeholder="e.g. Fed hawkish statement..."></textarea></div>
-        <button class="btn btnp wf" onclick="saveM()">+ Simpan Hasil Macro</button>
+        <div class="scard">
+          <div class="slabel">TOTAL2 ($B)</div>
+          <div class="sval">${fmt(tot2,0)}B</div>
+          <div class="schg" style="color:${pctCol(tot2Trend)}">${tot2Trend!==null?pctStr(tot2Trend)+" (3M)":"—"}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px">${tot2Trend!==null&&tot2Trend>10?"Altcoin naik kuat":"Altcoin lesu"}</div>
+        </div>
+        <div class="scard">
+          <div class="slabel">USDT Dominance</div>
+          <div class="sval">${fmt(usdtd,1)}%</div>
+          <div style="font-size:11px;color:${usdtd>8?"#ff2a45":usdtd<5?"#00e87a":"#94a3b8"};margin-top:4px">${usdtd>8?"⚠️ Banyak pegang stable":usdtd<5?"✅ Dana sudah di market":"Netral"}</div>
+        </div>
       </div>
-      <div class="card">
-        <div class="slbl">⚡ Signal Preview</div>
-        <div id="qsig"><p class="tmut txs">Input data untuk preview sinyal...</p></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="fbet mb12">
-        <div class="slbl" style="margin:0">📋 History Macro</div>
-        <select class="inp" style="width:150px;padding:5px 8px;font-size:12px" onchange="filterM(this.value)">
-          <option value="">Semua Event</option>${ML.map(e=>`<option value="${e.id}">${e.id}</option>`).join('')}
-        </select>
-      </div>
-      <div id="mh" style="overflow-x:auto">${tblM(rec)}</div>
-    </div>
-  </div>`;
-}
-
-function tblM(d){
-  if(!d.length) return `<p class="tmut tsm">Belum ada data macro.</p>`;
-  return `<table class="dtbl"><thead><tr><th>Tanggal</th><th>Event</th><th>Periode</th><th>Ctry</th><th class="tr">Expected</th><th class="tr">Actual</th><th>Diff</th><th>Result</th><th>Notes</th><th></th></tr></thead><tbody>
-  ${d.map(m=>{const b=m.actual>m.expected;const df=(m.actual-m.expected).toFixed(2);
-    return `<tr><td class="mono">${m.date}</td><td class="bold">${m.event}</td><td class="tmut">${m.period||'—'}</td><td>${bx(m.country||'USA','binfo')}</td><td class="mono tr">${m.expected} ${m.unit}</td><td class="mono tr bold ${b?'tshort':'tlong'}">${m.actual} ${m.unit}</td><td class="mono ${b?'tshort':'tlong'}">${df>0?'+':''}${df}</td><td>${bx(b?'BEAT':'MISS',b?'bshort':'blong')}</td><td class="tmut txs">${m.notes||'—'}</td><td><button onclick="delM('${m.id}')" style="color:var(--sh);background:none;border:none;cursor:pointer;font-size:13px">✕</button></td></tr>`;
-  }).join('')}</tbody></table>`;
-}
-
-// ═══ PAGE: CHARTS ═══
-function pgCharts(){
-  const aOpts=AA.map(a=>`<option>${a}</option>`).join('');
-  const prices=lp();
-  return `<div class="card mb16">
-    <div class="fbet mb16">
-      <div class="slbl" style="margin:0">📈 Price History Chart</div>
-      <div style="display:flex;gap:10px">
-        <select class="inp" id="ca" onchange="rpc()" style="width:150px;font-size:12px">${aOpts}</select>
-        <select class="inp" id="ct2" onchange="rpc()" style="width:130px;font-size:12px"><option value="">All TF</option>${TFS.map(t=>`<option value="${t.id}">${t.l}</option>`).join('')}</select>
-      </div>
-    </div>
-    <div style="height:300px;position:relative"><canvas id="pcanvas"></canvas></div>
-  </div>
-  <div class="g2 mb16">
-    <div class="card"><div class="slbl">📊 Macro Beat/Miss</div><div style="height:240px;position:relative"><canvas id="mcanvas"></canvas></div></div>
-    <div class="card"><div class="slbl">🎯 Signal Distribution</div><div style="height:240px;position:relative"><canvas id="scanvas"></canvas></div></div>
-  </div>
-  <div class="card">
-    <div class="slbl">💹 Asset Snapshot (Data Terkini)</div>
-    <div class="ga">
-      ${AA.map(a=>{const d=prices[a];return `<div class="amini" style="${d?`border-left:2px solid ${d.direction==='up'?'var(--lg)':'var(--sh)'}`:''}">
-        <div class="txs tmut mono mb4">${a}</div>
-        ${d?`<div class="bold mono" style="font-size:14px">${d.price?nr(d.price):'-'}</div><div class="tsm ${ds(d.direction)}">${d.direction==='up'?'↑':'↓'} ${d.change_pct}%</div><div class="txs tmut mt4">${d.date}</div>`:`<div class="tmut tsm">No data</div>`}
-      </div>`;}).join('')}
-    </div>
-  </div>`;
-}
-
-let PC,MC,SC;
-function initCharts(){rpc();rmc();rsc();}
-
-function cOpts(){
-  return{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:'#7a9cc0',font:{size:11,family:'Space Mono'}}}},
-    scales:{x:{grid:{color:'#0d2040'},ticks:{color:'#3d5a7a',font:{size:10},maxRotation:45}},y:{grid:{color:'#0d2040'},ticks:{color:'#3d5a7a',font:{size:10}}}}};
-}
-
-function rpc(){
-  const a=document.getElementById('ca')?.value||'BTC';
-  const tf=document.getElementById('ct2')?.value||'';
-  let d=S.prices.filter(p=>p.asset===a);
-  if(tf)d=d.filter(p=>p.timeframe===tf);
-  d.sort((a,b)=>new Date(a.date)-new Date(b.date));
-  if(PC)PC.destroy();
-  const ctx=document.getElementById('pcanvas');if(!ctx)return;
-  PC=new Chart(ctx,{type:'line',data:{labels:d.map(p=>p.date),datasets:[
-    {label:`${a} Price`,data:d.map(p=>p.price),borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.06)',tension:.35,fill:true,yAxisID:'y'},
-    {label:'Change %',data:d.map(p=>p.direction==='up'?p.change_pct:-p.change_pct),borderColor:'#00ff88',backgroundColor:'transparent',tension:.35,fill:false,yAxisID:'y1',borderDash:[4,4]}
-  ]},options:{...cOpts(),interaction:{mode:'index',intersect:false},scales:{
-    x:{grid:{color:'#0d2040'},ticks:{color:'#3d5a7a',font:{size:10},maxRotation:45}},
-    y:{grid:{color:'#0d2040'},ticks:{color:'#3d5a7a',font:{size:10}}},
-    y1:{position:'right',grid:{display:false},ticks:{color:'#3d5a7a',font:{size:10}}}
-  }}});
-}
-function rmc(){
-  if(MC)MC.destroy();
-  const ctx=document.getElementById('mcanvas');if(!ctx)return;
-  const d=[...S.macro].sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(-20);
-  MC=new Chart(ctx,{type:'bar',data:{labels:d.map(m=>`${m.event} ${m.date.slice(5)}`),datasets:[{
-    label:'Actual − Expected',data:d.map(m=>parseFloat((m.actual-m.expected).toFixed(2))),
-    backgroundColor:d.map(m=>m.actual>m.expected?'rgba(255,51,85,.6)':'rgba(0,255,136,.5)'),
-    borderColor:d.map(m=>m.actual>m.expected?'#ff3355':'#00ff88'),borderWidth:1}]},options:cOpts()});
-}
-function rsc(){
-  if(SC)SC.destroy();
-  const ctx=document.getElementById('scanvas');if(!ctx)return;
-  engine();
-  const l=S.signals.filter(s=>s.dir==='LONG').length,sh=S.signals.filter(s=>s.dir==='SHORT').length;
-  SC=new Chart(ctx,{type:'doughnut',data:{labels:[`LONG (${l})`,`SHORT (${sh})`],datasets:[{
-    data:[l,sh],backgroundColor:['rgba(0,255,136,.6)','rgba(255,51,85,.6)'],borderColor:['#00ff88','#ff3355'],borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#7a9cc0',font:{size:11,family:'Space Mono'}}}}}});
-}
-
-// ═══ PAGE: SIGNALS ═══
-function pgSigs(){
-  engine();
-  const sigs=S.signals;
-  const cs=sigs.filter(s=>ASSETS.Crypto.includes(s.asset));
-  const fs=sigs.filter(s=>ASSETS.Currency.includes(s.asset));
-  const ks=sigs.filter(s=>ASSETS.Commodity.includes(s.asset));
-  const is=sigs.filter(s=>ASSETS.Index.includes(s.asset));
-  function sb(title,icon,list){
-    return `<div class="card mb16"><div class="slbl">${icon} ${title} (${list.length})</div>
-      ${list.length===0?`<p class="tmut tsm">No signals. Input data terlebih dahulu.</p>`:
-        list.map(s=>`<div class="crow">
-          <div style="width:68px">${bx(s.dir,s.dir==='LONG'?'blong':'bshort')}</div>
-          <div style="width:88px;font-weight:700;font-size:14px">${s.asset}</div>
-          <div style="flex:1">
-            <div class="tsec tsm">${s.reason}</div>
-            <div class="txs tmut mt4">${bx(s.type,'binfo')} · ${s.date} ${s.fresh?'<span class="fdot"></span>':''} ${s.count>1?`· <span class="tam bold">${s.count} confirmed</span>`:''}</div>
-          </div>
-          <div style="width:100px">
-            ${pb(s.prob,s.dir)}
-            <div class="fbet mt4">
-              <span class="txs tmut">${s.prob>=80?'🔥 HIGH':s.prob>=65?'📊 MED':'⚪ LOW'}</span>
-              <span class="mono bold" style="font-size:12px;color:${s.dir==='LONG'?'var(--lg)':'var(--sh)'}">${s.prob}%</span>
-            </div>
-          </div>
-        </div>`).join('')}
     </div>`;
   }
-  return `<div class="g2">
-    <div>${sb('CRYPTO SIGNALS','₿',cs)}${sb('FOREX SIGNALS','💱',fs)}</div>
-    <div>${sb('COMMODITY SIGNALS','🥇',ks)}${sb('INDEX SIGNALS','📊',is)}</div>
-  </div>
-  <div class="card">
-    <div class="fbet mb16">
-      <div class="slbl" style="margin:0">📓 Trade Journal</div>
-      <button class="btn btnp" onclick="openTM()" style="font-size:12px;padding:6px 14px">+ Log Trade</button>
-    </div>
-    <div id="tlog">${tblT()}</div>
-  </div>`;
-}
 
-function tblT(){
-  if(!S.trades.length) return `<p class="tmut tsm">Belum ada trade log.</p>`;
-  return `<table class="dtbl"><thead><tr><th>Tanggal</th><th>Aset</th><th>Dir</th><th>Entry</th><th>Exit</th><th>P/L</th><th>Trigger</th><th>Notes</th><th></th></tr></thead><tbody>
-  ${S.trades.map(t=>{
-    const pl=t.exit?((t.exit-t.entry)/t.entry*100*(t.dir==='LONG'?1:-1)).toFixed(2):null;
-    return `<tr><td class="mono">${t.date}</td><td class="bold">${t.asset}</td><td>${bx(t.dir,t.dir==='LONG'?'blong':'bshort')}</td>
-      <td class="mono">${nr(t.entry)}</td><td class="mono">${t.exit?nr(t.exit):'—'}</td>
-      <td class="mono bold ${pl>0?'tlong':pl<0?'tshort':'tmut'}">${pl!==null?(pl>0?'+':'')+pl+'%':'Open'}</td>
-      <td class="txs tel">${t.trigger||'—'}</td><td class="txs tmut">${t.notes||'—'}</td>
-      <td><button onclick="delT('${t.id}')" style="color:var(--sh);background:none;border:none;cursor:pointer">✕</button></td>
-    </tr>`;
-  }).join('')}</tbody></table>`;
-}
-
-// ═══ PAGE: CORRELATION ═══
-function pgCorr(){
-  const prices=lp();
-  const dxy=prices['DXY'],vix=prices['VIX'],spx=prices['SPX'],btcd=prices['BTC.D'];
-  const matrix=[
-    {p:'DXY ↔ BTC',c:-0.78,d:'Inverse sangat kuat. DXY naik = BTC turun.',r:'DXY +0.5% → BTC SHORT (72%)',t:'inv'},
-    {p:'DXY ↔ EUR/USD',c:-0.95,d:'Paling inverse. EUR/USD = cermin DXY.',r:'DXY +0.5% → EUR/USD SHORT (83%)',t:'inv'},
-    {p:'VIX ↔ BTC',c:-0.71,d:'VIX tinggi = fear = risk off = BTC turun.',r:'VIX >25 → BTC SHORT (85%)',t:'inv'},
-    {p:'VIX ↔ SPX',c:-0.82,d:'VIX dan SPX selalu berlawanan arah.',r:'VIX >25 → SPX SHORT (80%)',t:'inv'},
-    {p:'SPX ↔ BTC',c:0.65,d:'Positive correlation moderate.',r:'SPX ↓1% → BTC SHORT (70%)',t:'pos'},
-    {p:'BTC.D ↔ TOTAL2',c:-0.85,d:'BTC.D naik = altcoin turun relative BTC.',r:'BTC.D +0.5% → TOTAL2 SHORT (80%)',t:'inv'},
-    {p:'GOLD ↔ DXY',c:-0.65,d:'Gold dan USD biasanya inverse.',r:'DXY +0.5% → GOLD SHORT (55%)',t:'inv'},
-    {p:'ETH ↔ BTC',c:0.90,d:'Highly correlated. ETH ikut BTC hampir selalu.',r:'BTC SHORT → ETH SHORT amplified',t:'pos'},
-    {p:'TOTAL2 ↔ BTC',c:0.85,d:'TOTAL2 ikut BTC tapi 2-3x lebih volatile.',r:'BTC SHORT → TOTAL2 SHORT x2',t:'pos'},
-    {p:'AUD/USD ↔ RISK',c:0.72,d:'AUD adalah risk currency.',r:'CPI Beat → AUD/USD SHORT (62%)',t:'pos'},
-    {p:'USD/JPY ↔ RISK',c:0.68,d:'JPY safe haven. Risk off = USD/JPY turun.',r:'VIX >25 → USD/JPY SHORT (72%)',t:'pos'},
-    {p:'OIL ↔ SPX',c:0.58,d:'Oil dan equities cenderung searah.',r:'NFP Beat → OIL LONG (65%)',t:'pos'},
-  ];
-  const sc=[
-    {l:'DXY Signal',data:dxy,v:d=>`${d.direction==='up'?'↑':'↓'} ${d.change_pct}%`,c:d=>d.direction==='up'?'var(--sh)':'var(--lg)',s:d=>d.direction==='up'?'Bearish Crypto Bias':'Bullish Crypto Bias'},
-    {l:'VIX Level',data:vix,v:d=>`${d.price}`,c:d=>d.price>=30?'var(--sh)':d.price>=25?'#ff6688':d.price>=20?'var(--am)':'var(--lg)',s:d=>d.price>=30?'EXTREME DANGER':d.price>=25?'DANGER ZONE':d.price>=20?'ELEVATED':'NORMAL'},
-    {l:'SPX Trend',data:spx,v:d=>`${d.direction==='up'?'↑':'↓'} ${d.change_pct}%`,c:d=>d.direction==='up'?'var(--lg)':'var(--sh)',s:d=>d.direction==='up'?'Risk On':'Risk Off'},
-    {l:'BTC.D',data:btcd,v:d=>`${d.direction==='up'?'↑':'↓'} ${d.change_pct}%`,c:d=>d.direction==='up'?'var(--am)':'var(--el)',s:d=>d.direction==='up'?'Alt Rotation Out':'Alt Season Bias'},
-  ];
-  const dt=[
-    {k:'CPI BEAT',s:['BTC SHORT 75%','ETH SHORT 77%','TOTAL2 SHORT 82%','DXY LONG 78%','GOLD LONG 65%']},
-    {k:'CPI MISS',s:['BTC LONG 60%','ETH LONG 62%','TOTAL2 LONG 65%','DXY SHORT 55%']},
-    {k:'NFP BEAT',s:['BTC SHORT 70%','DXY LONG 72%','SPX LONG 78%','OIL_WTI LONG 65%']},
-    {k:'NFP MISS',s:['BTC LONG 65%','GOLD LONG 72%','DXY SHORT 60%']},
-    {k:'FOMC HIKE',s:['BTC SHORT 87%','TOTAL2 SHORT 91%','DXY LONG 83%','SPX SHORT 70%']},
-    {k:'FOMC CUT',s:['BTC LONG 79%','TOTAL2 LONG 83%','DXY SHORT 76%','GOLD LONG 79%']},
-    {k:'VIX > 25',s:['BTC SHORT 85%','TOTAL2 SHORT 90%','GOLD LONG 79%','USD/JPY SHORT 72%']},
-    {k:'VIX > 30',s:['BTC SHORT 93%','TOTAL2 SHORT 96%','GOLD LONG 86%']},
-    {k:'DXY +0.5%',s:['BTC SHORT 72%','TOTAL2 SHORT 78%','EUR/USD SHORT 83%']},
-    {k:'DXY -0.5%',s:['BTC LONG 68%','TOTAL2 LONG 73%','EUR/USD LONG 80%']},
-    {k:'SPX -1%',s:['BTC SHORT 70%','ETH SHORT 68%','TOTAL2 SHORT 75%']},
-    {k:'BTC.D +0.5%',s:['TOTAL2 SHORT 80%','ETH SHORT 72%','TOTAL3 SHORT 85%']},
-  ];
-  return `<div class="card mb16">
-    <div class="slbl">📊 Current Market Correlation Status</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-      ${sc.map(s=>{const v=s.data?s.v(s.data):null,cl=s.data?s.c(s.data):null,sb=s.data?s.s(s.data):null;
-        return `<div class="cdk" style="padding:14px;border-left:2px solid ${cl||'var(--br)'}">
-          <div class="mlbl">${s.l}</div>
-          <div class="mval" style="color:${cl||'var(--tm)'};font-size:16px">${v||'No data'}</div>
-          ${sb?`<div class="txs mt4" style="color:${cl}">${sb}</div>`:''}
-        </div>`;}).join('')}
-    </div>
-  </div>
-  <div class="card mb16">
-    <div class="slbl">🔗 Correlation Matrix</div>
-    <div class="ga">
-      ${matrix.map(m=>{const st=Math.abs(m.c);const sl=st>=.8?'VERY STRONG':st>=.65?'STRONG':'MODERATE';const sc2=st>=.8?'var(--sh)':st>=.65?'var(--am)':'var(--tm)';
-        return `<div class="cdk" style="padding:14px">
-          <div class="fbet mb8"><span class="bold tsm">${m.p}</span><span class="mono bold" style="color:${m.t==='inv'?'var(--sh)':'var(--lg)'}">${m.c}</span></div>
-          <div class="pbwrap mb8"><div style="height:100%;width:${st*100}%;background:${m.t==='inv'?'var(--sh)':'var(--lg)'};border-radius:2px"></div></div>
-          <div class="txs mb8" style="color:${sc2}">${m.t==='inv'?'↓ INVERSE':'↑ POSITIVE'} · ${sl}</div>
-          <div class="txs tmut mb8">${m.d}</div>
-          <div class="txs" style="background:var(--eld);color:var(--el);padding:5px 8px;border-radius:4px">💡 ${m.r}</div>
-        </div>`;}).join('')}
-    </div>
-  </div>
-  <div class="card">
-    <div class="slbl">📋 Quick Decision Tree</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px">
-      ${dt.map(d=>`<div class="cdk" style="padding:12px">
-        <div class="bold tam mb8" style="font-size:12px">🔑 ${d.k}</div>
-        ${d.s.map(s=>{const p=s.split(' ');return `<div class="fbet" style="padding:3px 0;border-bottom:1px solid var(--br)">
-          <span class="tsec txs">${p[0]}</span>
-          <div style="display:flex;gap:6px;align-items:center">${bx(p[1],p[1]==='LONG'?'blong':'bshort')}<span class="mono txs bold" style="color:${p[1]==='LONG'?'var(--lg)':'var(--sh)'}">${p[2]}</span></div>
-        </div>`;}).join('')}
-      </div>`).join('')}
-    </div>
-  </div>`;
-}
-
-// ═══ PAGE: CALENDAR ═══
-function pgCal(){
-  const evs=[
-    {w:'Daily',t:'13:30',n:'Initial Jobless Claims',c:'USA',i:'high',a:'BTC, DXY, EUR/USD, USD/JPY'},
-    {w:'Selasa',t:'12:00',n:'CPI Release',c:'USA',i:'high',a:'BTC, ETH, TOTAL2, DXY, GOLD, BONDS'},
-    {w:'Rabu',t:'12:30',n:'PPI Report',c:'USA',i:'medium',a:'BTC, DXY, OIL, GOLD'},
-    {w:'Rabu',t:'18:00',n:'FOMC Meeting Minutes',c:'USA',i:'high',a:'ALL MARKETS'},
-    {w:'Kamis',t:'12:30',n:'Unemployment Claims',c:'USA',i:'high',a:'BTC, DXY, EUR/USD'},
-    {w:'Jumat',t:'12:30',n:'NFP (Non-Farm Payroll)',c:'USA',i:'high',a:'BTC, DXY, EUR/USD, AUD/USD, OIL, SPX'},
-    {w:'Jumat',t:'14:00',n:'Michigan Consumer Sentiment',c:'USA',i:'medium',a:'BTC, SPX'},
-    {w:'Monthly',t:'08:30',n:'PCE Price Index',c:'USA',i:'high',a:'BTC, DXY, GOLD, BONDS'},
-    {w:'Monthly',t:'08:15',n:'ADP Employment',c:'USA',i:'medium',a:'BTC, DXY (pre-NFP signal)'},
-    {w:'Monthly',t:'10:00',n:'ISM PMI',c:'USA',i:'medium',a:'BTC, SPX, OIL'},
-    {w:'Monthly',t:'10:00',n:'Retail Sales',c:'USA',i:'medium',a:'BTC, SPX, USD'},
-    {w:'Monthly',t:'10:00',n:'JOLTS Job Openings',c:'USA',i:'medium',a:'BTC, DXY, SPX'},
-    {w:'Monthly',t:'17:00',n:'ECB Rate Decision',c:'EU',i:'high',a:'EUR/USD, GBP/USD, BTC'},
-    {w:'Monthly',t:'03:00',n:'BOJ Rate Decision',c:'JP',i:'high',a:'USD/JPY, GOLD, BTC'},
-    {w:'Monthly',t:'11:00',n:'BOE Rate Decision',c:'UK',i:'high',a:'GBP/USD, BTC'},
-    {w:'6× per Year',t:'14:00',n:'FOMC Interest Rate Decision',c:'USA',i:'high',a:'ALL MARKETS — HIGHEST IMPACT'},
-    {w:'Quarterly',t:'08:30',n:'GDP Report',c:'USA',i:'high',a:'ALL MARKETS'},
-    {w:'Quarterly',t:'08:30',n:'Employment Cost Index',c:'USA',i:'medium',a:'BTC, DXY, BONDS'},
-  ];
-  return `<div class="card mb16">
-    <div class="slbl">📅 Macro Economic Calendar</div>
-    <div style="overflow-x:auto">
-    <table class="dtbl">
-      <thead><tr><th>Jadwal</th><th>Waktu (GMT)</th><th>Event</th><th>Negara</th><th>Impact</th><th>Aset Terpengaruh</th></tr></thead>
-      <tbody>
-      ${evs.map(e=>`<tr>
-        <td class="tsec">${e.w}</td>
-        <td class="mono tel">${e.t}</td>
-        <td class="bold">${e.n}</td>
-        <td>${bx(e.c,'binfo')}</td>
-        <td>${bx(e.i==='high'?'🔴 HIGH':e.i==='medium'?'🟡 MED':'🟢 LOW',e.i==='high'?'bhigh':e.i==='medium'?'bmed':'blow')}</td>
-        <td class="txs tmut">${e.a}</td>
-      </tr>`).join('')}
-      </tbody>
-    </table>
-    </div>
-  </div>
-  <div class="g2">
-    <div class="card">
-      <div class="slbl">⏱️ Timing News Trading</div>
-      ${[
-        ['15 MIN BEFORE','Jangan open position. Tunggu volatilitas. Spread melebar sebelum news.'],
-        ['0–5 MIN AFTER','Volatilitas ekstrem, spread besar. Biarkan candle terbentuk dulu.'],
-        ['5–15 MIN AFTER','Moment ideal entry berdasarkan direction yang terbentuk.'],
-        ['30–60 MIN AFTER','Retracement sering terjadi. Confirm apakah signal kuat.'],
-        ['1–4 JAM AFTER','Trend direction terkonfirmasi. Waktu terbaik untuk swing entry.'],
-      ].map(t=>`<div style="padding:10px 0;border-bottom:1px solid var(--br)"><div class="bold txs tel mb4">${t[0]}</div><div class="txs tsec">${t[1]}</div></div>`).join('')}
-    </div>
-    <div class="card">
-      <div class="slbl">🎯 Priority Matrix</div>
-      ${[
-        {tier:'TIER 1 — MUST TRADE',c:'var(--sh)',e:'NFP, FOMC, CPI',v:'Volatilitas 3–8% pada crypto. Semua pair bereaksi kuat.'},
-        {tier:'TIER 2 — HIGH PRIORITY',c:'var(--am)',e:'PCE, GDP, PPI, ECB/BOJ Rates',v:'Volatilitas 1–3%. Sinyal kuat untuk trend.'},
-        {tier:'TIER 3 — MEDIUM',c:'var(--el)',e:'ADP, PMI, Retail Sales, JOLTS',v:'Volatilitas 0.5–2%. Pre-signal untuk event besar.'},
-        {tier:'TIER 4 — MONITOR',c:'var(--tm)',e:'Jobless Claims, Michigan, Housing',v:'Konfirmasi trend saja.'},
-      ].map(t=>`<div style="padding:10px 0;border-bottom:1px solid var(--br)">
-        <div class="bold mb4" style="color:${t.c};font-size:12px">${t.tier}</div>
-        <div class="bold tsm mb4">${t.e}</div>
-        <div class="txs tmut">${t.v}</div>
-      </div>`).join('')}
-      <div style="margin-top:12px;padding:12px;background:var(--bgi);border-radius:var(--r);border:1px solid var(--brl)">
-        <div class="bold txs tam mb8">💡 PRO TIPS</div>
-        <div class="txs tsec">
-          • FRED (fred.stlouisfed.org) untuk historical data & forecasts<br>
-          • Investing.com Economic Calendar untuk jadwal exact<br>
-          • BTC Funding Rate: jika &gt;0.1% = too many longs, short opportunity<br>
-          • Fear &amp; Greed &lt;25 = Extreme Fear (LONG bias), &gt;75 = Greed (SHORT bias)<br>
-          • DXY chart selalu buka bersamaan saat trading crypto
+  document.getElementById("content").innerHTML=`
+  <div>
+    <!-- OVERALL REGIME -->
+    <div class="panel" style="border-color:${bi.bc}">
+      <div class="panel-title">Market Regime Saat Ini</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:10px;color:#64748b;font-family:var(--cond);letter-spacing:.8px;margin-bottom:5px">MACRO BIAS</div>
+          <div style="font-size:20px;font-weight:800;color:${bi.c};font-family:var(--cond)">${bi.l}</div>
+          <div style="font-size:12px;color:#64748b;margin-top:3px">Score: ${bias>=0?"+":""}${bias} / 10</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:#64748b;font-family:var(--cond);letter-spacing:.8px;margin-bottom:5px">DOLLAR / RISK</div>
+          <div style="font-size:13px;color:#e2e8f0;line-height:1.7">${forexRegime||"<span style='color:#475569'>Input data DXY & VIX untuk analisis</span>"}</div>
         </div>
       </div>
     </div>
+    <!-- CRYPTO REGIME -->
+    <div class="panel">
+      <div class="panel-title">Crypto Market Structure</div>
+      <div style="font-size:13px;color:#e2e8f0;line-height:1.8">${cryptoRegime||"<span style='color:#475569'>Input data BTC.D & USDT.D untuk analisis</span>"}</div>
+    </div>
+    ${altHtml}
+    <!-- TRADE HINTS -->
+    <div class="panel">
+      <div class="panel-title">🎯 Rekomendasi Aksi</div>
+      ${tradeHints.map(h=>`<div style="padding:8px 12px;margin-bottom:6px;background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--r);font-size:13px;color:#e2e8f0;line-height:1.6">${h}</div>`).join("")}
+    </div>
+    <!-- DOMINANCE RULES -->
+    <div class="panel" style="background:rgba(249,115,22,.04);border-color:rgba(249,115,22,.15)">
+      <div class="panel-title">Panduan Dominance</div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Kondisi</th><th>Sinyal</th><th>Aksi</th></tr></thead>
+        <tbody>
+          <tr><td style="color:#f97316;font-family:var(--mono)">BTC.D > 58%</td><td>BTC Season aktif</td><td>Hanya LONG BTC/ETH</td></tr>
+          <tr><td style="color:#f97316;font-family:var(--mono)">BTC.D 50–55% & turun</td><td>Rotasi ke alts mulai</td><td>Pertimbangkan TOTAL2/alts</td></tr>
+          <tr><td style="color:#f97316;font-family:var(--mono)">BTC.D < 50%</td><td>Altcoin season penuh</td><td>Fokus alts mid-cap</td></tr>
+          <tr><td style="color:#f97316;font-family:var(--mono)">USDT.D > 8%</td><td>Fear — orang pegang stable</td><td>Hindari LONG, tunggu reversal</td></tr>
+          <tr><td style="color:#f97316;font-family:var(--mono)">USDT.D < 5%</td><td>Dana sudah deploy</td><td>Ikuti trend, jangan FOMO top</td></tr>
+          <tr><td style="color:#f97316;font-family:var(--mono)">TOTAL2 naik, BTC.D turun</td><td>Konfirmasi altcoin season</td><td>LONG alts dengan sizing</td></tr>
+          <tr><td style="color:#f97316;font-family:var(--mono)">TOTAL2 turun, USDT.D naik</td><td>Risk-off crypto</td><td>Kurangi eksposur alts</td></tr>
+        </tbody>
+      </table></div>
+    </div>
   </div>`;
 }
 
-// ── FORM HANDLERS ──
-function setTF(tf,el){S.tf=tf;document.querySelectorAll('.tfb').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
-function setDir(dir,el){
-  S.dir=dir;
-  document.getElementById('bup').className='dirb'+(dir==='up'?' ua':'');
-  document.getElementById('bdn').className='dirb'+(dir==='down'?' da':'');
-}
-function saveP(){
-  const d=document.getElementById('pd').value,a=document.getElementById('pa').value;
-  const p=parseFloat(document.getElementById('pp').value),c=parseFloat(document.getElementById('pc').value);
-  const n=document.getElementById('pn').value;
-  if(!d||!a) return notif('Isi tanggal & aset!','err');
-  S.prices.push({id:Date.now()+'',date:d,asset:a,price:isNaN(p)?null:p,change_pct:isNaN(c)?0:Math.abs(c),direction:S.dir,timeframe:S.tf,notes:n});
-  save();
-  document.getElementById('pp').value='';document.getElementById('pc').value='';document.getElementById('pn').value='';
-  const r=[...S.prices].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
-  document.getElementById('ph').innerHTML=tblP(r);
-  notif('✅ Data harga disimpan!','ok');
-}
-function saveM(){
-  const d=document.getElementById('md').value,el=document.getElementById('me');
-  const ev=el.value,pr=document.getElementById('mpr').value;
-  const x=parseFloat(document.getElementById('mx').value),a=parseFloat(document.getElementById('ma').value);
-  const n=document.getElementById('mn').value,opt=el.options[el.selectedIndex];
-  if(!d||!ev||isNaN(x)||isNaN(a)) return notif('Isi semua field!','err');
-  S.macro.push({id:Date.now()+'',date:d,event:ev,period:pr,expected:x,actual:a,unit:opt.dataset.u,impact:opt.dataset.i,country:opt.dataset.c,notes:n});
-  save();
-  document.getElementById('mx').value='';document.getElementById('ma').value='';
-  document.getElementById('mn').value='';document.getElementById('mpr').value='';
-  document.getElementById('mpbox').innerHTML='<p class="tmut txs">Isi Expected & Actual untuk preview...</p>';
-  document.getElementById('mpbox').style.borderColor='var(--brl)';
-  document.getElementById('qsig').innerHTML='<p class="tmut txs">Input data untuk preview sinyal...</p>';
-  const r=[...S.macro].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
-  document.getElementById('mh').innerHTML=tblM(r);
-  notif('✅ Data macro disimpan!','ok');
-}
-function lprev(){
-  const x=parseFloat(document.getElementById('mx').value),a=parseFloat(document.getElementById('ma').value);
-  const ev=document.getElementById('me').value;
-  if(isNaN(x)||isNaN(a)||!ev) return;
-  const b=a>x,df=(a-x).toFixed(2);
-  const box=document.getElementById('mpbox');
-  box.style.borderColor=b?'var(--shb)':'var(--lgb)';
-  box.innerHTML=`<div class="fbet mb8"><span class="bold" style="color:${b?'var(--sh)':'var(--lg)'}">${b?'📈 BEAT — RISK OFF':'📉 MISS — RISK ON'}</span><span class="mono txs tmut">${x} → ${a} (${df>0?'+':''}${df})</span></div>`;
-  const R=RULES[ev];
-  if(R){const rs=b?R.beat:R.miss;
-    document.getElementById('qsig').innerHTML=rs.slice(0,6).map(r=>`<div class="fbet" style="padding:4px 0;border-bottom:1px solid var(--br)"><span class="tsec tsm">${r.a}</span><div style="display:flex;gap:8px;align-items:center">${bx(r.d,r.d==='LONG'?'blong':'bshort')}<span class="mono bold txs" style="color:${r.d==='LONG'?'var(--lg)':'var(--sh)'}">${r.p}%</span></div></div>`).join('');}
-}
-function updUnit(el){const o=el.options[el.selectedIndex];const u=`(${o.dataset.u})`;document.getElementById('ul').textContent=u;document.getElementById('ul2').textContent=u;lprev();}
-function filterP(a){let d=a?S.prices.filter(p=>p.asset===a):[...S.prices];d=d.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);document.getElementById('ph').innerHTML=tblP(d);}
-function filterM(e){let d=e?S.macro.filter(m=>m.event===e):[...S.macro];d=d.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);document.getElementById('mh').innerHTML=tblM(d);}
-function delP(id){S.prices=S.prices.filter(p=>p.id!==id);save();const r=[...S.prices].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);document.getElementById('ph').innerHTML=tblP(r);}
-function delM(id){S.macro=S.macro.filter(m=>m.id!==id);save();const r=[...S.macro].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);document.getElementById('mh').innerHTML=tblM(r);}
-function delT(id){S.trades=S.trades.filter(t=>t.id!==id);save();const tl=document.getElementById('tlog');if(tl)tl.innerHTML=tblT();}
-function openTM(){
-  document.getElementById('mbox').innerHTML=`
-    <div class="bold mb16" style="font-size:15px">📓 Log Trade</div>
-    <div class="mb12"><label class="flbl">Tanggal</label><input type="date" class="inp" id="td" value="${new Date().toISOString().split('T')[0]}"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" class="mb12">
-      <div><label class="flbl">Aset</label><input class="inp" id="ta" placeholder="BTC"></div>
-      <div><label class="flbl">Direction</label><select class="inp" id="tdr"><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select></div>
+// ═══════════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════
+function openExportImport(){
+  document.getElementById("mcontent").innerHTML=`
+    <div class="mtitle">💾 Backup & Restore</div>
+    <div style="margin-bottom:16px">
+      <div class="panel-title" style="margin-bottom:6px">Export (Backup)</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:10px">Unduh semua data kamu sebagai file JSON. Simpan sebagai backup.</div>
+      <button class="btn1" onclick="doExport()">⬇️ Download Backup JSON</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" class="mb12">
-      <div><label class="flbl">Entry Price</label><input type="number" class="inp" id="ten" placeholder="45000" step="0.01"></div>
-      <div><label class="flbl">Exit Price</label><input type="number" class="inp" id="tex" placeholder="opsional" step="0.01"></div>
+    <div class="sep"></div>
+    <div style="margin-top:14px">
+      <div class="panel-title" style="margin-bottom:6px">Import (Restore)</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:10px">Import file backup JSON. <b style="color:#ff2a45">PERINGATAN:</b> Ini akan menggabungkan data yang ada.</div>
+      <input type="file" id="import-file" accept=".json" style="margin-bottom:10px">
+      <button class="btn1" onclick="doImport()">⬆️ Import Data</button>
     </div>
-    <div class="mb12"><label class="flbl">Macro Trigger</label><input class="inp" id="ttr" placeholder="e.g. CPI Miss, NFP Beat, VIX >25"></div>
-    <div class="mb16"><label class="flbl">Notes</label><textarea class="inp" id="tn" placeholder="Reasoning, entry criteria..."></textarea></div>
-    <div style="display:flex;gap:10px">
-      <button class="btn btnp" style="flex:1" onclick="saveTrade()">Simpan</button>
-      <button class="btn" style="flex:1" onclick="closeM()">Batal</button>
-    </div>`;
-  document.getElementById('moverlay').style.display='flex';
-}
-function saveTrade(){
-  S.trades.unshift({id:Date.now()+'',date:document.getElementById('td').value,asset:document.getElementById('ta').value,dir:document.getElementById('tdr').value,entry:parseFloat(document.getElementById('ten').value),exit:parseFloat(document.getElementById('tex').value)||null,trigger:document.getElementById('ttr').value,notes:document.getElementById('tn').value});
-  save();closeM();const tl=document.getElementById('tlog');if(tl)tl.innerHTML=tblT();
-}
-function closeM(){document.getElementById('moverlay').style.display='none';}
-
-// ── DATA MANAGEMENT ──
-function exportData(){
-  const d={prices:S.prices,macro:S.macro,trades:S.trades,exported:new Date().toISOString()};
-  const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`macrotrader_${new Date().toISOString().split('T')[0]}.json`;a.click();
-  notif('📤 Data exported!','ok');
-}
-function importData(){document.getElementById('fimp').click();}
-function handleImp(e){
-  const f=e.target.files[0];if(!f) return;
-  const r=new FileReader();r.onload=ev=>{
-    try{const d=JSON.parse(ev.target.result);if(d.prices)S.prices=d.prices;if(d.macro)S.macro=d.macro;if(d.trades)S.trades=d.trades;save();render(S.tab);notif('✅ Data imported!','ok');}
-    catch(err){notif('❌ File tidak valid','err');}
-  };r.readAsText(f);e.target.value='';
-}
-function clearAll(){
-  if(!confirm('⚠️ Hapus semua data? Tidak bisa di-undo!')) return;
-  S.prices=[];S.macro=[];S.trades=[];save();render(S.tab);notif('🗑️ Data dihapus','ok');
+    <div style="margin-top:16px;padding:10px;background:rgba(249,115,22,.06);border-radius:var(--r);border:.5px solid rgba(249,115,22,.2);font-size:11px;color:#64748b">
+      📊 Status: <b style="color:#f97316">${ST.priceHistory.length} entri harga</b> + <b style="color:#f97316">${ST.macroHistory.length} event macro</b>
+    </div>
+    <button class="btn2" style="margin-top:14px;width:100%" onclick="closeModal()">Tutup</button>`;
+  document.getElementById("modal").classList.remove("hidden");
 }
 
-// ── UTILITIES ──
-function notif(msg,type){
-  const el=document.createElement('div');el.className='notif';
-  el.style.cssText=`background:${type==='ok'?'rgba(0,60,30,.96)':'rgba(60,0,20,.96)'};color:${type==='ok'?'#00ff88':'#ff8099'};border:1px solid ${type==='ok'?'var(--lgb)':'var(--shb)'}`;
-  el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);
+function doExport(){
+  const data={version:"1.0",exportDate:new Date().toISOString(),priceHistory:ST.priceHistory,macroHistory:ST.macroHistory};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;
+  a.download="bbmacro_backup_"+new Date().toISOString().split("T")[0]+".json";
+  a.click();URL.revokeObjectURL(url);
+  notif("✓ Backup diunduh");
 }
-function tick(){document.getElementById('clock').textContent=new Date().toLocaleString('id-ID',{weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 
-// ── INIT ──
-tick();setInterval(tick,1000);render('dashboard');
+function doImport(){
+  const file=document.getElementById("import-file")?.files?.[0];
+  if(!file){notif("Pilih file JSON dulu!","err");return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.priceHistory){
+        // Merge — add entries not already present
+        data.priceHistory.forEach(entry=>{
+          if(!ST.priceHistory.find(p=>p.date===entry.date))ST.priceHistory.push(entry);
+        });
+        ST.priceHistory.sort((a,b)=>a.date.localeCompare(b.date));
+        savePrices();
+      }
+      if(data.macroHistory){
+        data.macroHistory.forEach(entry=>{
+          if(!ST.macroHistory.find(m=>m.id===entry.id))ST.macroHistory.push(entry);
+        });
+        ST.macroHistory.sort((a,b)=>a.date.localeCompare(b.date));
+        saveMacro();
+      }
+      closeModal();updateHeader();renderDash();
+      notif(`✓ Import berhasil! +${data.priceHistory?.length||0} harga, +${data.macroHistory?.length||0} macro`);
+    }catch{notif("Format file tidak valid!","err");}
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROUTER
+// ═══════════════════════════════════════════════════════════════
+const TABMAP={dash:"📊 Dashboard",prices:"📈 Input Harga",macro:"📋 Macro Log",signals:"⚡ Sinyal",chart:"📉 Chart",corr:"🔗 Korelasi",regime:"🎯 Regime"};
+
+function go(tab){
+  ST.tab=tab;
+  document.querySelectorAll(".tab").forEach(el=>{
+    el.classList.toggle("active",el.textContent.trim().startsWith(TABMAP[tab]?.trim()||"____"));
+  });
+  if(tab==="dash")renderDash();
+  else if(tab==="prices")renderPrices();
+  else if(tab==="macro")renderMacro();
+  else if(tab==="signals")renderSignals();
+  else if(tab==="chart")renderChart();
+  else if(tab==="corr")renderCorr();
+  else if(tab==="regime")renderRegime();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.getElementById("content").innerHTML=`<div style="text-align:center;padding:60px;color:#64748b"><div style="font-family:var(--cond);font-size:18px;letter-spacing:2px;color:#f97316">LOADING BBMacro Terminal...</div></div>`;
+loadAll();
+updateHeader();
+renderDash();
 </script>
 </body>
 </html>
