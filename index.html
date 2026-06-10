@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>BBMacro Terminal v1.0</title>
+<title>BBMacro Terminal v2.0</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -102,12 +102,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- HEADER -->
 <div id="hdr">
-  <div class="logo">BB<span>MACRO</span></div>
+  <div class="logo">BB<span>MACRO</span> <span style="font-size:11px;color:#475569;letter-spacing:0">v2</span></div>
   <div class="hstat">BTC <b id="h-btc">—</b></div>
   <div class="hstat">ETH <b id="h-eth">—</b></div>
   <div class="hstat">DXY <b id="h-dxy">—</b></div>
   <div class="hstat">GOLD <b id="h-gold">—</b></div>
   <div class="hstat">VIX <b id="h-vix">—</b></div>
+  <div class="hstat">10Y <b id="h-10y">—</b></div>
   <div class="hstat" style="margin-left:auto">BIAS <b id="h-bias">—</b></div>
   <div class="hstat" style="color:var(--text3);font-size:10px" id="h-date"></div>
   <button class="btn2" style="font-size:11px;padding:5px 10px" onclick="openExportImport()">💾 Backup</button>
@@ -116,7 +117,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- TABS -->
 <div id="tabs">
   <button class="tab active" onclick="go('dash')">📊 Dashboard</button>
-  <button class="tab" onclick="go('prices')">📈 Input Harga</button>
+  <button class="tab" onclick="go('import')">📥 Paste TSV</button>
+  <button class="tab" onclick="go('prices')">✏️ Manual Input</button>
   <button class="tab" onclick="go('macro')">📋 Macro Log</button>
   <button class="tab" onclick="go('signals')">⚡ Sinyal</button>
   <button class="tab" onclick="go('chart')">📉 Chart</button>
@@ -131,23 +133,50 @@ tr:hover td{background:rgba(255,255,255,.02)}
 // DATA DEFINITIONS
 // ═══════════════════════════════════════════════════════════════
 const ASSETS=[
-  {k:"BTC",  l:"Bitcoin",      cat:"Crypto",   dp:0},
-  {k:"ETH",  l:"Ethereum",     cat:"Crypto",   dp:0},
-  {k:"BTC_D",l:"BTC.D%",       cat:"Crypto",   dp:2},
-  {k:"TOTAL2",l:"TOTAL2($B)",  cat:"Crypto",   dp:1},
-  {k:"TOTAL3",l:"TOTAL3($B)",  cat:"Crypto",   dp:1},
-  {k:"USDT_D",l:"USDT.D%",    cat:"Crypto",   dp:2},
-  {k:"DXY",  l:"DXY",          cat:"Forex",    dp:2},
-  {k:"EURUSD",l:"EUR/USD",     cat:"Forex",    dp:4},
-  {k:"USDJPY",l:"USD/JPY",     cat:"Forex",    dp:2},
-  {k:"AUDUSD",l:"AUD/USD",     cat:"Forex",    dp:4},
-  {k:"GOLD", l:"Gold",         cat:"Komoditas",dp:0},
-  {k:"SILVER",l:"Silver",      cat:"Komoditas",dp:2},
-  {k:"OIL",  l:"WTI Oil",      cat:"Komoditas",dp:2},
-  {k:"SPX",  l:"S&P 500",      cat:"Index",    dp:0},
-  {k:"NDX",  l:"NASDAQ 100",   cat:"Index",    dp:0},
-  {k:"VIX",  l:"VIX",          cat:"Index",    dp:2},
-  {k:"US10Y",l:"US 10Y%",      cat:"Bonds",    dp:3},
+  // ── Crypto Market Structure ──
+  {k:"BTC",     l:"Bitcoin",              cat:"Crypto",  dp:0,  src:"TV",  ticker:"BTCUSDT"},
+  {k:"ETH",     l:"Ethereum",             cat:"Crypto",  dp:0,  src:"TV",  ticker:"ETHUSDT"},
+  {k:"TOTAL",   l:"Total Market Cap($T)", cat:"Crypto",  dp:3,  src:"TV",  ticker:"TOTAL"},
+  {k:"TOTAL2",  l:"Total2 ex-BTC($T)",    cat:"Crypto",  dp:3,  src:"TV",  ticker:"TOTAL2"},
+  {k:"TOTAL3",  l:"Total3 ex-BTC/ETH($T)",cat:"Crypto", dp:3,  src:"TV",  ticker:"TOTAL3"},
+  {k:"OTHERS",  l:"Others Market Cap($T)",cat:"Crypto",  dp:3,  src:"TV",  ticker:"OTHERS"},
+  {k:"BTC_D",   l:"BTC Dominance%",       cat:"Crypto",  dp:2,  src:"TV",  ticker:"BTC.D"},
+  {k:"ETH_D",   l:"ETH Dominance%",       cat:"Crypto",  dp:2,  src:"TV",  ticker:"ETH.D"},
+  {k:"OTHERS_D",l:"Others.D%",            cat:"Crypto",  dp:2,  src:"TV",  ticker:"OTHERS.D"},
+  {k:"USDT_D",  l:"USDT Dominance%",      cat:"Crypto",  dp:2,  src:"TV",  ticker:"USDT.D"},
+  // ── Forex ──
+  {k:"DXY",     l:"DXY Index",            cat:"Forex",   dp:2,  src:"TV",  ticker:"DXY"},
+  {k:"EURUSD",  l:"EUR/USD",              cat:"Forex",   dp:4,  src:"TV",  ticker:"EURUSD"},
+  {k:"USDJPY",  l:"USD/JPY",              cat:"Forex",   dp:2,  src:"TV",  ticker:"USDJPY"},
+  {k:"AUDUSD",  l:"AUD/USD",              cat:"Forex",   dp:4,  src:"TV",  ticker:"AUDUSD"},
+  {k:"GBPUSD",  l:"GBP/USD",              cat:"Forex",   dp:4,  src:"TV",  ticker:"GBPUSD"},
+  {k:"USDCAD",  l:"USD/CAD",              cat:"Forex",   dp:4,  src:"TV",  ticker:"USDCAD"},
+  // ── Komoditas ──
+  {k:"GOLD",    l:"Gold (XAU/USD)",        cat:"Komoditas",dp:0, src:"TV",  ticker:"XAUUSD"},
+  {k:"SILVER",  l:"Silver (XAG/USD)",      cat:"Komoditas",dp:2, src:"TV",  ticker:"XAGUSD"},
+  {k:"OIL",     l:"WTI Crude Oil",         cat:"Komoditas",dp:2, src:"TV",  ticker:"USOIL"},
+  {k:"COPPER",  l:"Copper (HG1)",          cat:"Komoditas",dp:3, src:"TV",  ticker:"HG1!"},
+  // ── Indices ──
+  {k:"SPX",     l:"S&P 500",               cat:"Index",   dp:0, src:"TV",  ticker:"SPX"},
+  {k:"NDX",     l:"NASDAQ 100",            cat:"Index",   dp:0, src:"TV",  ticker:"NDX"},
+  {k:"VIX",     l:"VIX Fear Index",        cat:"Index",   dp:2, src:"TV",  ticker:"VIX"},
+  {k:"MOVE",    l:"MOVE Bond Vol Index",   cat:"Index",   dp:2, src:"TV",  ticker:"MOVE"},
+  // ── Bonds & Yield Curve ──
+  {k:"US02Y",   l:"US 2Y Yield",           cat:"Bonds",   dp:3, src:"TV",  ticker:"US02Y"},
+  {k:"US10Y",   l:"US 10Y Yield",          cat:"Bonds",   dp:3, src:"TV",  ticker:"US10Y"},
+  {k:"US30Y",   l:"US 30Y Yield",          cat:"Bonds",   dp:3, src:"TV",  ticker:"US30Y"},
+  // ── FRED Macro Indicators ──
+  {k:"FEDFUNDS",l:"Fed Funds Rate",        cat:"FRED",    dp:2, src:"FRED",ticker:"FEDFUNDS"},
+  {k:"UNRATE",  l:"Unemployment Rate",     cat:"FRED",    dp:1, src:"FRED",ticker:"UNRATE"},
+  {k:"CPIAUCSL",l:"CPI (All Items)",       cat:"FRED",    dp:2, src:"FRED",ticker:"CPIAUCSL"},
+  {k:"PCEPILFE",l:"PCE Core ex Food/Energy",cat:"FRED",  dp:2, src:"FRED",ticker:"PCEPILFE"},
+  {k:"M2SL",    l:"M2 Money Supply ($B)",  cat:"FRED",    dp:0, src:"FRED",ticker:"M2SL"},
+  {k:"GDPC1",   l:"Real GDP ($B chained)", cat:"FRED",    dp:0, src:"FRED",ticker:"GDPC1"},
+  {k:"WALCL",   l:"Fed Balance Sheet($B)", cat:"FRED",    dp:0, src:"FRED",ticker:"WALCL"},
+  {k:"RRPONTS", l:"Reverse Repo ($B)",     cat:"FRED",    dp:0, src:"FRED",ticker:"RRPONTSYD"},
+  {k:"T5YIE",   l:"5Y Breakeven Inflation",cat:"FRED",   dp:2, src:"FRED",ticker:"T5YIE"},
+  {k:"RECPRO",  l:"Recession Probability%",cat:"FRED",   dp:1, src:"FRED",ticker:"RECPROUS"},
+  {k:"WTIREGEN",l:"WTI Crude (FRED)",      cat:"FRED",    dp:2, src:"FRED",ticker:"WTIREGEN"},
 ];
 
 const L="LONG",S="SHORT",N="NEUTRAL";
@@ -249,8 +278,23 @@ const MTYPES={
   RETAIL:{l:"Retail Sales",o:[{k:"STRONG",l:"💪 Kuat",b:1},{k:"WEAK",l:"📉 Lemah",b:-1},{k:"INLINE",l:"⚖️ In-Line",b:0}]},
 };
 
-const CORR_KEYS=["BTC","ETH","DXY","GOLD","SILVER","OIL","SPX","NDX","VIX"];
-const HIST_CORR=[[100,92,-75,55,52,40,65,70,-80],[92,100,-78,52,48,38,62,68,-82],[-75,-78,100,-70,-65,-35,-58,-62,35],[55,52,-70,100,85,40,45,42,55],[52,48,-65,85,100,45,42,40,50],[40,38,-35,40,45,100,50,45,-45],[65,62,-58,45,42,50,100,93,-92],[70,68,-62,42,40,45,93,100,-90],[-80,-82,35,55,50,-45,-92,-90,100]];
+const CORR_KEYS=["BTC","ETH","DXY","GOLD","SILVER","OIL","SPX","NDX","VIX","US10Y","TOTAL2","BTC_D","USDT_D"];
+// Historis ref correlations: BTC,ETH,DXY,GOLD,SILVER,OIL,SPX,NDX,VIX,US10Y,TOTAL2,BTC_D,USDT_D
+const HIST_CORR=[
+  [100,92,-75,55,52,40,65,70,-80,-65,88,60,-70],
+  [92,100,-78,52,48,38,62,68,-82,-62,85,55,-72],
+  [-75,-78,100,-70,-65,-35,-58,-62,35,68,-73,-50,68],
+  [55,52,-70,100,85,40,45,42,55,-55,50,42,-45],
+  [52,48,-65,85,100,45,42,40,50,-50,48,38,-42],
+  [40,38,-35,40,45,100,50,45,-45,-35,38,30,-30],
+  [65,62,-58,45,42,50,100,93,-92,-70,60,45,-58],
+  [70,68,-62,42,40,45,93,100,-90,-75,65,48,-62],
+  [-80,-82,35,55,50,-45,-92,-90,100,60,-78,-55,72],
+  [-65,-62,68,-55,-50,-35,-70,-75,60,100,-60,-48,62],
+  [88,85,-73,50,48,38,60,65,-78,-60,100,55,-75],
+  [60,55,-50,42,38,30,45,48,-55,-48,55,100,-65],
+  [-70,-72,68,-45,-42,-30,-58,-62,72,62,-75,-65,100],
+];
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
@@ -389,6 +433,8 @@ function updateHeader(){
     el.style.color=c===null?"#f97316":c>0?"#00e87a":c<0?"#ff2a45":"#94a3b8";
   }
   setH("h-btc","BTC",0);setH("h-eth","ETH",0);setH("h-dxy","DXY",2);setH("h-gold","GOLD",0);setH("h-vix","VIX",2);
+  const yEl=document.getElementById("h-10y");
+  if(yEl){const v=la?.prices?.US10Y;yEl.textContent=v?fmt(v,3)+"%":"—";yEl.style.color=v?"#38bdf8":"#64748b";}
   const bias=calcBias(ST.macroHistory);
   const bi=biasInfo(bias);
   const bEl=document.getElementById("h-bias");
@@ -1109,10 +1155,311 @@ function doImport(){
   reader.readAsText(file);
 }
 
+
+// ═══════════════════════════════════════════════════════════════
+// TSV / CSV PARSER
+// ═══════════════════════════════════════════════════════════════
+function parseTSV(rawText){
+  const lines=rawText.trim().split('\n')
+    .map(l=>l.trim())
+    .filter(l=>l&&!l.startsWith('#')&&!l.startsWith('//'));
+  if(!lines.length)return{rows:[],count:0,format:'none',error:'Input kosong'};
+
+  // Auto-detect separator: tab or comma
+  const firstLine=lines[0];
+  const tabCount=(firstLine.match(/\t/g)||[]).length;
+  const commaCount=(firstLine.match(/,/g)||[]).length;
+  const sep=tabCount>commaCount?'\t':',';
+
+  // Parse all rows into columns
+  const parsed=lines.map(l=>l.split(sep).map(c=>c.trim().replace(/^"|"$/g,'')));
+
+  // Detect header: if first col is not a number or timestamp, it's a header
+  const col0=parsed[0][0].toLowerCase();
+  const isHeader=isNaN(parseFloat(col0))||col0.includes('date')||col0.includes('time')||col0.includes('period');
+  const header=isHeader?parsed[0]:null;
+  const dataRows=isHeader?parsed.slice(1):parsed;
+
+  if(!dataRows.length)return{rows:[],count:0,format:'header_only',error:'Hanya header, tidak ada data'};
+
+  // Detect format: OHLCV (6 cols) vs 2-col (date,value)
+  const ncols=dataRows[0].length;
+  let format=ncols>=5?'ohlcv':'2col';
+
+  // Find close column index
+  let closeIdx=4; // default OHLCV: time,open,high,low,close,vol
+  if(header){
+    const ci=header.findIndex(h=>h==='close'||h==='price'||h==='value'||h==='last');
+    if(ci>=0)closeIdx=ci;
+    else if(ncols===2)closeIdx=1;
+  }
+
+  const results=[];
+  dataRows.forEach(cols=>{
+    if(!cols.length||!cols[0])return;
+    let date=null;
+    const raw0=cols[0];
+
+    // Unix timestamp (9-10 digit number)
+    if(/^\d{9,10}$/.test(raw0)){
+      date=new Date(parseInt(raw0)*1000).toISOString().split('T')[0];
+    }
+    // Unix ms timestamp (13 digit)
+    else if(/^\d{13}$/.test(raw0)){
+      date=new Date(parseInt(raw0)).toISOString().split('T')[0];
+    }
+    // YYYY-MM-DD or YYYY/MM/DD
+    else if(/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}/.test(raw0)){
+      const d=raw0.substring(0,10).replace(/\//g,'-');
+      const parts=d.split('-');
+      if(parts.length===3)date=parts[0]+'-'+parts[1].padStart(2,'0')+'-'+parts[2].padStart(2,'0');
+    }
+    // MM/DD/YYYY
+    else if(/^\d{1,2}\/\d{1,2}\/\d{4}/.test(raw0)){
+      const[m,d,y]=raw0.split('/');
+      date=y+'-'+m.padStart(2,'0')+'-'+d.padStart(2,'0');
+    }
+    // DD.MM.YYYY (European)
+    else if(/^\d{1,2}\.\d{1,2}\.\d{4}/.test(raw0)){
+      const[d,m,y]=raw0.split('.');
+      date=y+'-'+m.padStart(2,'0')+'-'+d.padStart(2,'0');
+    }
+
+    if(!date)return;
+
+    const rawVal=(cols[closeIdx]||cols[1]||'').replace(/,/g,'').replace(/\s/g,'');
+    const value=parseFloat(rawVal);
+    if(!isNaN(value))results.push({date,value});
+  });
+
+  // Deduplicate: keep last occurrence per date
+  const map={};
+  results.forEach(r=>{map[r.date]=r.value;});
+  const rows=Object.entries(map)
+    .map(([date,value])=>({date,value}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+
+  return{rows,count:rows.length,format,
+    dateRange:rows.length?`${rows[0].date} → ${rows[rows.length-1].date}`:''};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB: IMPORT TSV
+// ═══════════════════════════════════════════════════════════════
+let tsvPreview=null;
+
+function renderImport(){
+  // Build asset options grouped by category
+  const cats=[...new Set(ASSETS.map(a=>a.cat))];
+  let aOpts='';
+  cats.forEach(cat=>{
+    aOpts+=`<optgroup label="── ${cat} ──">`;
+    ASSETS.filter(a=>a.cat===cat).forEach(a=>{
+      aOpts+=`<option value="${a.k}">${a.k} — ${a.l}</option>`;
+    });
+    aOpts+='</optgroup>';
+  });
+
+  // Import log
+  const importLog=JSON.parse(localStorage.getItem('bbm_import_log')||'[]');
+  const logRows=importLog.slice(-10).reverse().map(l=>
+    `<tr><td style="color:#f97316">${l.date}</td><td>${l.asset}</td><td style="color:#00e87a">${l.count} baris</td><td style="color:#64748b">${l.range}</td></tr>`
+  ).join('');
+
+  // Preview section
+  const previewHtml=tsvPreview?`
+    <div style="margin-top:10px;padding:10px 14px;border-radius:var(--r);border:.5px solid ${tsvPreview.count>0?'rgba(0,232,122,.3)':'rgba(255,42,69,.3)'};background:${tsvPreview.count>0?'rgba(0,232,122,.07)':'rgba(255,42,69,.07)'}">
+      ${tsvPreview.count>0?`
+        <div style="font-size:13px;font-weight:600;color:#00e87a;margin-bottom:6px">✓ Terdeteksi ${tsvPreview.count} baris data</div>
+        <div style="font-size:11px;color:#94a3b8">Format: <b style="color:#f97316">${tsvPreview.format.toUpperCase()}</b> &nbsp;·&nbsp; Rentang: <b style="color:#e2e8f0">${tsvPreview.dateRange}</b></div>
+        <div style="overflow-x:auto;margin-top:8px">
+          <table style="font-size:11px">
+            <thead><tr><th>Tanggal</th><th>Nilai</th></tr></thead>
+            <tbody>${tsvPreview.rows.slice(0,5).map(r=>`<tr><td>${r.date}</td><td style="color:#f97316;font-family:var(--mono)">${r.value}</td></tr>`).join('')}
+            ${tsvPreview.rows.length>5?`<tr><td colspan="2" style="color:#475569;font-size:10px">... dan ${tsvPreview.rows.length-5} baris lagi</td></tr>`:''}</tbody>
+          </table>
+        </div>
+        <button class="btn1" style="margin-top:10px" onclick="executeImport()">⬇️ Import ${tsvPreview.count} Baris ke Database</button>`
+      :`<div style="color:#ff2a45">⚠️ ${tsvPreview.error||'Tidak ada data valid yang terdeteksi'}</div>`}
+    </div>`:
+    `<div style="margin-top:10px;padding:10px 14px;background:var(--bg3);border-radius:var(--r);border:.5px solid var(--border2);font-size:12px;color:#64748b">
+      Paste data di atas lalu klik <b style="color:#f97316">Preview</b> untuk cek sebelum import.
+    </div>`;
+
+  document.getElementById("content").innerHTML=`
+  <div>
+    <!-- CARA PAKAI -->
+    <div class="panel" style="background:rgba(249,115,22,.06);border-color:rgba(249,115,22,.25)">
+      <div class="panel-title">📥 Import Data via Paste TSV/CSV — Cara Pakai</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px;color:#94a3b8;line-height:1.9">
+        <div>
+          <b style="color:#f97316">TradingView (harga aset):</b><br>
+          1. Buka chart aset di TradingView<br>
+          2. Klik ikon <b style="color:#e2e8f0">📊 Download</b> di bawah chart, pilih <b style="color:#e2e8f0">"Export chart data (CSV)"</b><br>
+          3. Buka file CSV → Ctrl+A → Ctrl+C<br>
+          4. Pilih aset di bawah → Paste → Preview → Import<br>
+          <span style="color:#475569;font-size:10px">Format: time,open,high,low,<b>close</b>,volume — otomatis ambil close price</span>
+        </div>
+        <div>
+          <b style="color:#f97316">FRED (macro indicators):</b><br>
+          1. Buka <a href="https://fred.stlouisfed.org" target="_blank" style="color:#38bdf8">fred.stlouisfed.org</a><br>
+          2. Cari ticker (FEDFUNDS, UNRATE, CPIAUCSL, dll)<br>
+          3. Klik <b style="color:#e2e8f0">Download → CSV</b><br>
+          4. Buka file CSV → Ctrl+A → Ctrl+C<br>
+          5. Pilih aset FRED yang sesuai → Paste → Import<br>
+          <span style="color:#475569;font-size:10px">Format: DATE,VALUE — otomatis terdeteksi</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT FORM -->
+    <div class="panel">
+      <div class="panel-title">Paste Data</div>
+      <div class="grid2" style="margin-bottom:12px">
+        <div>
+          <label class="flabel">Pilih Aset / Indikator</label>
+          <select id="tsv-asset">${aOpts}</select>
+        </div>
+        <div>
+          <label class="flabel">Kolom Nilai (opsional override)</label>
+          <select id="tsv-col">
+            <option value="auto">Auto-detect (rekomendasi)</option>
+            <option value="1">Kolom 2 (index 1)</option>
+            <option value="4">Kolom 5 Close (index 4) — TradingView OHLCV</option>
+            <option value="5">Kolom 6 (index 5)</option>
+          </select>
+        </div>
+      </div>
+      <label class="flabel">Paste TSV / CSV Data di sini</label>
+      <textarea id="tsv-paste" rows="10" placeholder="Paste data TSV atau CSV dari TradingView / FRED di sini...
+
+Contoh TradingView:
+time,open,high,low,close,volume
+1717200000,67000.00,67500.00,66800.00,67200.00,123456.78
+
+Contoh FRED:
+DATE,FEDFUNDS
+2026-01-01,4.25
+2026-02-01,4.25" style="font-size:11px;line-height:1.6"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn1" onclick="previewTSV()">🔍 Preview</button>
+        <button class="btn2" onclick="document.getElementById('tsv-paste').value='';tsvPreview=null;renderImport()">🗑 Clear</button>
+        <button class="btn2" onclick="batchImportHelp()">📋 Batch Import</button>
+      </div>
+      ${previewHtml}
+    </div>
+
+    <!-- ASET CHECKLIST -->
+    <div class="panel">
+      <div class="panel-title">Status Data per Aset</div>
+      ${renderAssetStatus()}
+    </div>
+
+    <!-- IMPORT LOG -->
+    ${logRows?`<div class="panel">
+      <div class="panel-title">Import Log (10 terakhir)</div>
+      <table><thead><tr><th>Waktu Import</th><th>Aset</th><th>Rows</th><th>Rentang Tanggal</th></tr></thead>
+      <tbody>${logRows}</tbody></table>
+    </div>`:''}
+  </div>`;
+}
+
+function renderAssetStatus(){
+  // For each asset, show how many price entries exist
+  const cats=[...new Set(ASSETS.map(a=>a.cat))];
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">';
+  ASSETS.forEach(a=>{
+    const count=ST.priceHistory.filter(p=>p.prices[a.k]!==undefined).length;
+    const latest=ST.priceHistory.slice().reverse().find(p=>p.prices[a.k]!==undefined);
+    const bg=count>=30?'rgba(0,232,122,.08)':count>=7?'rgba(249,115,22,.08)':'var(--bg3)';
+    const bc=count>=30?'rgba(0,232,122,.2)':count>=7?'rgba(249,115,22,.15)':'var(--border2)';
+    html+=`<div style="background:${bg};border:.5px solid ${bc};border-radius:var(--r);padding:7px 10px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="document.getElementById('tsv-asset').value='${a.k}';document.getElementById('tsv-paste').focus()">
+      <span style="font-size:10px;font-family:var(--mono);color:#f97316;font-weight:700;min-width:65px">${a.k}</span>
+      <div style="flex:1">
+        <div style="font-size:10px;color:#94a3b8">${a.l}</div>
+        <div style="font-size:10px;font-family:var(--mono);color:${count>=30?'#00e87a':count>=7?'#f97316':'#475569'}">${count>0?count+' data pts · last: '+latest?.date:'— belum ada data'}</div>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function previewTSV(){
+  const raw=document.getElementById('tsv-paste')?.value||'';
+  if(!raw.trim()){notif('Paste data dulu!','err');return;}
+  tsvPreview=parseTSV(raw);
+  renderImport();
+  // Scroll to preview
+  setTimeout(()=>{
+    const el=document.querySelector('#content .panel:nth-child(2)');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'end'});
+  },100);
+}
+
+function executeImport(){
+  if(!tsvPreview||!tsvPreview.rows||!tsvPreview.count){notif('Preview dulu!','err');return;}
+  const asset=document.getElementById('tsv-asset')?.value;
+  if(!asset){notif('Pilih aset!','err');return;}
+
+  let added=0,updated=0;
+  tsvPreview.rows.forEach(({date,value})=>{
+    const existing=ST.priceHistory.find(p=>p.date===date);
+    if(existing){existing.prices[asset]=value;updated++;}
+    else{ST.priceHistory.push({date,prices:{[asset]:value}});added++;}
+  });
+  ST.priceHistory.sort((a,b)=>a.date.localeCompare(b.date));
+  savePrices();
+
+  // Log import
+  const log=JSON.parse(localStorage.getItem('bbm_import_log')||'[]');
+  log.push({date:new Date().toISOString().replace('T',' ').substring(0,16),asset,count:tsvPreview.count,range:tsvPreview.dateRange});
+  localStorage.setItem('bbm_import_log',JSON.stringify(log.slice(-50)));
+
+  tsvPreview=null;
+  updateHeader();
+  renderImport();
+  notif(`✓ Import selesai! +${added} baru, ~${updated} update untuk ${asset}`);
+}
+
+function batchImportHelp(){
+  document.getElementById('mcontent').innerHTML=`
+    <div class="mtitle">📋 Batch Import — Cara Cepat</div>
+    <div style="font-size:13px;color:#94a3b8;line-height:2;margin-bottom:14px">
+      Untuk import banyak aset sekaligus:<br>
+      1. Import satu per satu (pilih aset → paste → import)<br>
+      2. Ulangi untuk setiap aset yang mau di-track<br>
+      3. Data tersimpan otomatis di browser kamu<br><br>
+      <b style="color:#f97316">Rekomendasi urutan untuk trader crypto+forex:</b>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">
+      ${[
+        ['Prioritas 1 (Daily)', ['BTC','ETH','DXY','GOLD','VIX','BTC_D','USDT_D'],'#00e87a'],
+        ['Prioritas 2 (Daily)', ['TOTAL','TOTAL2','TOTAL3','OTHERS_D','EURUSD','US10Y','US02Y'],'#f97316'],
+        ['Prioritas 3 (Weekly)', ['SPX','NDX','SILVER','OIL','MOVE','USDJPY','US30Y'],'#38bdf8'],
+        ['FRED (Monthly)', ['FEDFUNDS','UNRATE','CPIAUCSL','PCEPILFE','M2SL','WALCL','T5YIE'],'#94a3b8'],
+      ].map(([label,keys,color])=>`<div style="background:var(--bg3);border:.5px solid var(--border2);border-radius:var(--r);padding:10px">
+        <div style="font-size:10px;color:${color};font-family:var(--cond);font-weight:700;margin-bottom:6px">${label}</div>
+        ${keys.map(k=>`<span style="display:inline-block;font-family:var(--mono);font-size:10px;background:rgba(249,115,22,.1);color:#f97316;padding:1px 5px;border-radius:3px;margin:2px">${k}</span>`).join('')}
+      </div>`).join('')}
+    </div>
+    <button class="btn2" style="margin-top:16px;width:100%" onclick="closeModal()">Tutup</button>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
 // ═══════════════════════════════════════════════════════════════
 // ROUTER
 // ═══════════════════════════════════════════════════════════════
-const TABMAP={dash:"📊 Dashboard",prices:"📈 Input Harga",macro:"📋 Macro Log",signals:"⚡ Sinyal",chart:"📉 Chart",corr:"🔗 Korelasi",regime:"🎯 Regime"};
+const TABMAP={
+  dash:"📊 Dashboard",
+  import:"📥 Paste TSV",
+  prices:"✏️ Manual Input",
+  macro:"📋 Macro Log",
+  signals:"⚡ Sinyal",
+  chart:"📉 Chart",
+  corr:"🔗 Korelasi",
+  regime:"🎯 Regime"
+};
 
 function go(tab){
   ST.tab=tab;
@@ -1120,6 +1467,7 @@ function go(tab){
     el.classList.toggle("active",el.textContent.trim().startsWith(TABMAP[tab]?.trim()||"____"));
   });
   if(tab==="dash")renderDash();
+  else if(tab==="import"){tsvPreview=null;renderImport();}
   else if(tab==="prices")renderPrices();
   else if(tab==="macro")renderMacro();
   else if(tab==="signals")renderSignals();
