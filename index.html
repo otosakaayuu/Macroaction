@@ -841,54 +841,105 @@ function renderChart(){
 
 function drawChart(){
   const canvas=document.getElementById("price-chart");if(!canvas)return;
-  if(ST.chartInst){ST.chartInst.destroy();ST.chartInst=null;}
+  if(ST.chartInst){try{ST.chartInst.destroy();}catch(e){}ST.chartInst=null;}
+
   const ph=filterByTf(ST.priceHistory,ST.chartTf);
   const asset=ST.chartAsset;
-  const adp=ASSETS.find(a=>a.k===asset)?.dp||0;
-  const data=ph.map(p=>({x:p.date,y:p.prices[asset]||null})).filter(d=>d.y!==null);
-  if(data.length<2)return;
+  const adp=ASSETS.find(a=>a.k===asset)?.dp||2;
+
+  // Only include dates where this asset has a real value
+  const data=ph
+    .filter(p=>p.prices[asset]!=null&&p.prices[asset]!==undefined)
+    .map(p=>({x:p.date,y:Number(p.prices[asset])}));
+
+  if(data.length<2){
+    if(canvas.parentElement)canvas.parentElement.innerHTML=`
+      <div style="text-align:center;padding:40px;color:#475569;font-size:13px">
+        <div style="font-size:28px;margin-bottom:8px">📭</div>
+        Tidak ada cukup data untuk <b style="color:#f97316">${asset}</b> di timeframe <b>${ST.chartTf}</b>.<br>
+        <span style="font-size:11px;color:#64748b">Total entries: ${ST.priceHistory.length} · Data ${asset}: ${data.length} pts</span><br>
+        <span style="font-size:11px;color:#f97316">→ Import data dulu di tab Paste TSV</span>
+      </div>`;
+    return;
+  }
+
   const macroOnChart=ST.macroHistory.filter(e=>data.some(d=>d.x===e.date));
-  const ctx=canvas.getContext("2d");
-  const gr=ctx.createLinearGradient(0,0,0,canvas.height);
   const chg=pct(data[data.length-1].y,data[0].y);
-  const lc=chg===null||chg>=0?"#00e87a":"#ff2a45";
-  gr.addColorStop(0,lc.replace("#","rgba(")+",0.25)".replace("rgba(","rgba("));
-  gr.addColorStop(1,"rgba(0,0,0,0)");
-  const gc=ctx.createLinearGradient(0,0,0,canvas.height);
-  gc.addColorStop(0,chg>=0?"rgba(0,232,122,0.28)":"rgba(255,42,69,0.28)");
+  const lc=(chg===null||chg>=0)?"#00e87a":"#ff2a45";
+  const ctx=canvas.getContext("2d");
+  const h=Math.max(canvas.offsetHeight||canvas.height||320,100);
+
+  // Fixed gradient (use proper rgba)
+  const gc=ctx.createLinearGradient(0,0,0,h);
+  gc.addColorStop(0,(chg>=0)?"rgba(0,232,122,0.22)":"rgba(255,42,69,0.22)");
+  gc.addColorStop(0.7,"rgba(0,0,0,0.05)");
   gc.addColorStop(1,"rgba(0,0,0,0)");
-  ST.chartInst=new Chart(ctx,{
-    type:"line",
-    data:{datasets:[{data,borderColor:lc,borderWidth:2,pointRadius:2.5,pointBackgroundColor:lc,fill:true,backgroundColor:gc,tension:0.3,spanGaps:true}]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      scales:{
-        x:{type:"category",ticks:{color:"#475569",font:{family:"'JetBrains Mono'",size:9},maxRotation:45,autoSkip:true,maxTicksLimit:12},grid:{color:"rgba(255,255,255,.03)"}},
-        y:{ticks:{color:"#94a3b8",font:{family:"'JetBrains Mono'",size:9},callback:v=>fmt(v,adp)},grid:{color:"rgba(255,255,255,.05)"}},
-      },
-      plugins:{
-        legend:{display:false},
-        tooltip:{backgroundColor:"#0d1420",borderColor:"rgba(249,115,22,.3)",borderWidth:1,titleColor:"#f97316",bodyColor:"#e2e8f0",titleFont:{family:"'Barlow Condensed'",size:13,weight:"bold"},bodyFont:{family:"'JetBrains Mono'",size:12},
-          callbacks:{label:c=>`${asset}: ${fmt(c.parsed.y,adp)} | ${pctStr(pct(c.parsed.y,data[0].y))}`}},
-      },animation:{duration:300},
-    },
-  });
-  // Draw macro markers manually
-  if(macroOnChart.length){
-    const orig=ST.chartInst.draw.bind(ST.chartInst);
-    const plugin={id:"macroLines",afterDraw(chart){
-      const ctx2=chart.ctx;
+
+  // Macro event vertical line plugin — passed INLINE to chart, NOT via Chart.register (fixes the bug)
+  const macroPlugin={
+    id:"macroLines",
+    afterDraw(chart){
+      if(!macroOnChart.length||!chart.scales.x)return;
+      const c2=chart.ctx;
       macroOnChart.forEach(ev=>{
-        const idx=data.findIndex(d=>d.x===ev.date);if(idx<0)return;
-        const x=chart.scales.x.getPixelForIndex(idx);
-        ctx2.save();ctx2.strokeStyle="rgba(249,115,22,.55)";ctx2.lineWidth=1;ctx2.setLineDash([3,3]);
-        ctx2.beginPath();ctx2.moveTo(x,chart.chartArea.top);ctx2.lineTo(x,chart.chartArea.bottom);ctx2.stroke();
-        ctx2.fillStyle="#f97316";ctx2.font="bold 9px 'JetBrains Mono'";ctx2.fillText(ev.type,x+2,chart.chartArea.top+11);
-        ctx2.restore();
+        try{
+          const idx=data.findIndex(d=>d.x===ev.date);if(idx<0)return;
+          const x=chart.scales.x.getPixelForIndex(idx);
+          c2.save();
+          c2.strokeStyle="rgba(249,115,22,0.65)";c2.lineWidth=1;c2.setLineDash([3,4]);
+          c2.beginPath();c2.moveTo(x,chart.chartArea.top);c2.lineTo(x,chart.chartArea.bottom);c2.stroke();
+          c2.setLineDash([]);c2.fillStyle="#f97316";c2.font="bold 9px monospace";
+          c2.fillText(ev.type,x+2,chart.chartArea.top+10);
+          c2.restore();
+        }catch(e){}
       });
-    }};
-    Chart.register(plugin);
-    ST.chartInst.update();
+    }
+  };
+
+  try{
+    ST.chartInst=new Chart(ctx,{
+      type:"line",
+      data:{datasets:[{
+        data,
+        borderColor:lc,
+        borderWidth:2,
+        pointRadius:data.length>120?0:data.length>60?1:2,
+        pointHoverRadius:4,
+        pointBackgroundColor:lc,
+        fill:true,
+        backgroundColor:gc,
+        tension:0.25,
+        spanGaps:true,
+      }]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        scales:{
+          x:{type:"category",
+            ticks:{color:"#475569",font:{size:9},maxRotation:40,autoSkip:true,maxTicksLimit:10},
+            grid:{color:"rgba(255,255,255,0.03)"}},
+          y:{ticks:{color:"#94a3b8",font:{size:9},callback:v=>fmt(v,adp)},
+            grid:{color:"rgba(255,255,255,0.05)"}},
+        },
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            backgroundColor:"#0d1420",borderColor:"rgba(249,115,22,0.4)",borderWidth:1,
+            titleColor:"#f97316",bodyColor:"#e2e8f0",
+            callbacks:{
+              title:items=>`${items[0]?.label||""}`,
+              label:c=>`${asset}: ${fmt(c.parsed.y,adp)}   Chg: ${pctStr(pct(c.parsed.y,data[0].y))}`,
+            }
+          },
+        },
+        animation:{duration:250},
+        interaction:{mode:"index",intersect:false},
+      },
+      plugins:[macroPlugin], // ← inline, NOT Chart.register (no global pollution)
+    });
+  }catch(e){
+    console.error("Chart render error:",e);
+    if(canvas.parentElement)canvas.parentElement.innerHTML=`<div style="color:#ff2a45;padding:20px;font-size:12px;font-family:monospace">Chart error: ${e.message}</div>`;
   }
 }
 
