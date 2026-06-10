@@ -1365,24 +1365,173 @@ DATE,FEDFUNDS
 }
 
 function renderAssetStatus(){
-  // For each asset, show how many price entries exist
-  const cats=[...new Set(ASSETS.map(a=>a.cat))];
-  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">';
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px">';
   ASSETS.forEach(a=>{
     const count=ST.priceHistory.filter(p=>p.prices[a.k]!==undefined).length;
-    const latest=ST.priceHistory.slice().reverse().find(p=>p.prices[a.k]!==undefined);
-    const bg=count>=30?'rgba(0,232,122,.08)':count>=7?'rgba(249,115,22,.08)':'var(--bg3)';
+    const entries=ST.priceHistory.filter(p=>p.prices[a.k]!==undefined);
+    const latest=entries.slice(-1)[0];
+    const oldest=entries[0];
+    const bg=count>=30?'rgba(0,232,122,.08)':count>=7?'rgba(249,115,22,.07)':'var(--bg3)';
     const bc=count>=30?'rgba(0,232,122,.2)':count>=7?'rgba(249,115,22,.15)':'var(--border2)';
-    html+=`<div style="background:${bg};border:.5px solid ${bc};border-radius:var(--r);padding:7px 10px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="document.getElementById('tsv-asset').value='${a.k}';document.getElementById('tsv-paste').focus()">
-      <span style="font-size:10px;font-family:var(--mono);color:#f97316;font-weight:700;min-width:65px">${a.k}</span>
-      <div style="flex:1">
-        <div style="font-size:10px;color:#94a3b8">${a.l}</div>
-        <div style="font-size:10px;font-family:var(--mono);color:${count>=30?'#00e87a':count>=7?'#f97316':'#475569'}">${count>0?count+' data pts · last: '+latest?.date:'— belum ada data'}</div>
+    const dataColor=count>=30?'#00e87a':count>=7?'#f97316':'#475569';
+    html+=`<div style="background:${bg};border:.5px solid ${bc};border-radius:var(--r);padding:7px 10px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;font-family:var(--mono);color:#f97316;font-weight:700;min-width:68px;cursor:pointer" onclick="document.getElementById('tsv-asset').value='${a.k}'">${a.k}</span>
+        <div style="flex:1;cursor:pointer" onclick="document.getElementById('tsv-asset').value='${a.k}'">
+          <div style="font-size:10px;color:#94a3b8;line-height:1.2">${a.l}</div>
+          <div style="font-size:10px;font-family:var(--mono);color:${dataColor}">${count>0?count+' pts · '+oldest?.date+' → '+latest?.date:'— belum ada data'}</div>
+        </div>
+        ${count>0?`<div style="display:flex;gap:3px;flex-shrink:0">
+          <button onclick="openAssetManage('${a.k}')" title="Kelola data ${a.k}" style="background:rgba(249,115,22,.15);color:#f97316;border:.5px solid rgba(249,115,22,.3);border-radius:3px;padding:3px 6px;font-size:10px;font-family:var(--cond);font-weight:700">✏️</button>
+          <button onclick="confirmDeleteAsset('${a.k}',${count})" title="Hapus semua data ${a.k}" style="background:rgba(255,42,69,.12);color:#ff2a45;border:.5px solid rgba(255,42,69,.25);border-radius:3px;padding:3px 6px;font-size:10px;font-family:var(--cond);font-weight:700">🗑</button>
+        </div>`:''}
       </div>
     </div>`;
   });
   html+='</div>';
+  // Summary bar
+  const totalAssets=ASSETS.filter(a=>ST.priceHistory.some(p=>p.prices[a.k]!==undefined)).length;
+  const totalDates=ST.priceHistory.length;
+  html=`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;font-size:12px;color:#64748b">
+    <span>✅ <b style="color:#00e87a">${totalAssets}</b> aset ter-track</span>
+    <span>📅 <b style="color:#f97316">${totalDates}</b> entri tanggal</span>
+    <button onclick="confirmResetAll()" style="margin-left:auto;background:rgba(255,42,69,.1);color:#ff2a45;border:.5px solid rgba(255,42,69,.25);border-radius:4px;padding:4px 10px;font-size:11px;font-family:var(--cond);font-weight:700">🗑 Reset Semua Data</button>
+  </div>`+html;
   return html;
+}
+
+// ── ASSET DATA MANAGEMENT ────────────────────────────────────────
+function openAssetManage(key){
+  const a=ASSETS.find(x=>x.k===key);
+  const entries=ST.priceHistory
+    .filter(p=>p.prices[key]!==undefined)
+    .map(p=>({date:p.date,value:p.prices[key]}))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  if(!entries.length){notif('Tidak ada data untuk '+key,'err');return;}
+
+  const rows=entries.map((e,i)=>`
+    <tr id="arow_${i}">
+      <td style="color:#64748b;font-family:var(--mono)">${e.date}</td>
+      <td>
+        <input id="aval_${i}" type="number" step="any" value="${e.value}"
+          style="background:var(--bg3);border:.5px solid var(--border2);border-radius:3px;color:var(--text);padding:3px 7px;font-family:var(--mono);font-size:11px;width:120px">
+      </td>
+      <td>
+        <button onclick="saveOneValue('${key}','${e.date}',document.getElementById('aval_${i}').value,${i})"
+          style="background:rgba(249,115,22,.15);color:#f97316;border:.5px solid rgba(249,115,22,.3);border-radius:3px;padding:3px 8px;font-size:10px;font-family:var(--cond);font-weight:700;margin-right:3px">💾</button>
+        <button onclick="deleteOneDate('${key}','${e.date}',${i})"
+          style="background:rgba(255,42,69,.12);color:#ff2a45;border:.5px solid rgba(255,42,69,.25);border-radius:3px;padding:3px 8px;font-size:10px;font-family:var(--cond);font-weight:700">🗑</button>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('mcontent').innerHTML=`
+    <div class="mtitle">✏️ Kelola Data — ${key}</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:12px">${a?.l} · ${entries.length} data points · ${entries[entries.length-1]?.date} → ${entries[0]?.date}</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button onclick="confirmDeleteAsset('${key}',${entries.length});closeModal()" class="btnd" style="font-size:12px;padding:6px 14px">🗑 Hapus Semua Data ${key}</button>
+      <button onclick="openDeleteRangeModal('${key}')" class="btn2" style="font-size:12px">📅 Hapus Rentang Tanggal</button>
+      <button onclick="closeModal()" class="btn2" style="font-size:12px;margin-left:auto">✕ Tutup</button>
+    </div>
+    <div style="max-height:55vh;overflow-y:auto">
+      <table>
+        <thead><tr><th>Tanggal</th><th>Nilai</th><th>Aksi</th></tr></thead>
+        <tbody id="asset-edit-tbody">${rows}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function saveOneValue(key, date, newVal, rowIdx){
+  const v=parseFloat(newVal);
+  if(isNaN(v)){notif('Nilai tidak valid!','err');return;}
+  const entry=ST.priceHistory.find(p=>p.date===date);
+  if(entry){entry.prices[key]=v;}
+  savePrices();
+  // Visual feedback
+  const row=document.getElementById('arow_'+rowIdx);
+  if(row){row.style.background='rgba(0,232,122,.1)';setTimeout(()=>{if(row)row.style.background='';},1200);}
+  notif(`✓ ${key} ${date} → ${v} disimpan`);
+}
+
+function deleteOneDate(key, date, rowIdx){
+  const entry=ST.priceHistory.find(p=>p.date===date);
+  if(!entry)return;
+  delete entry.prices[key];
+  // Remove entry if no prices left
+  if(Object.keys(entry.prices).length===0){
+    ST.priceHistory=ST.priceHistory.filter(p=>p.date!==date);
+  }
+  savePrices();
+  const row=document.getElementById('arow_'+rowIdx);
+  if(row)row.remove();
+  notif(`✓ ${key} ${date} dihapus`);
+}
+
+function confirmDeleteAsset(key, count){
+  if(!confirm(`Hapus SEMUA ${count} data untuk ${key}?\nTindakan ini tidak bisa dibatalkan.`))return;
+  deleteAssetAll(key);
+}
+
+function deleteAssetAll(key){
+  let removed=0;
+  ST.priceHistory.forEach(entry=>{
+    if(entry.prices[key]!==undefined){delete entry.prices[key];removed++;}
+  });
+  // Clean up empty entries
+  ST.priceHistory=ST.priceHistory.filter(p=>Object.keys(p.prices).length>0);
+  savePrices();
+  updateHeader();
+  closeModal();
+  renderImport();
+  notif(`✓ Semua data ${key} (${removed} pts) dihapus`);
+}
+
+function openDeleteRangeModal(key){
+  const entries=ST.priceHistory.filter(p=>p.prices[key]!==undefined);
+  if(!entries.length){notif('Tidak ada data','err');return;}
+  const minDate=entries[0].date;
+  const maxDate=entries[entries.length-1].date;
+
+  document.getElementById('mcontent').innerHTML=`
+    <div class="mtitle">📅 Hapus Rentang Tanggal — ${key}</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:14px">Data tersedia: ${minDate} → ${maxDate}</div>
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="fgroup"><label class="flabel">Dari Tanggal</label><input type="date" id="dr-from" value="${minDate}" min="${minDate}" max="${maxDate}"></div>
+      <div class="fgroup"><label class="flabel">Sampai Tanggal</label><input type="date" id="dr-to" value="${maxDate}" min="${minDate}" max="${maxDate}"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btnd" style="font-size:13px;padding:8px 16px" onclick="executeDeleteRange('${key}')">🗑 Hapus Rentang Ini</button>
+      <button class="btn2" onclick="openAssetManage('${key}')">← Kembali</button>
+    </div>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function executeDeleteRange(key){
+  const from=document.getElementById('dr-from')?.value;
+  const to=document.getElementById('dr-to')?.value;
+  if(!from||!to){notif('Pilih rentang tanggal','err');return;}
+  let removed=0;
+  ST.priceHistory.forEach(entry=>{
+    if(entry.date>=from&&entry.date<=to&&entry.prices[key]!==undefined){
+      delete entry.prices[key];removed++;
+    }
+  });
+  ST.priceHistory=ST.priceHistory.filter(p=>Object.keys(p.prices).length>0);
+  savePrices();
+  updateHeader();
+  closeModal();
+  renderImport();
+  notif(`✓ ${removed} data ${key} (${from} → ${to}) dihapus`);
+}
+
+function confirmResetAll(){
+  if(!confirm(`RESET SEMUA DATA?\n\nIni akan menghapus:\n• ${ST.priceHistory.length} entri harga\n• ${ST.macroHistory.length} event macro\n\nTindakan TIDAK BISA DIBATALKAN!`))return;
+  ST.priceHistory=[];ST.macroHistory=[];
+  savePrices();saveMacro();
+  localStorage.removeItem('bbm_import_log');
+  updateHeader();renderImport();
+  notif('✓ Semua data direset');
 }
 
 function previewTSV(){
